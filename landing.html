@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Real-Time Entertainment Intelligence</title>
+  <meta name="description" content="Discover deep movie analytics. Financial performance, cast insights, box office trends — all in one cinematic dashboard." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,300&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── RESET ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold:      #c9a84c;
+      --gold-lt:   #e8d5a3;
+      --gold-dim:  rgba(201,168,76,0.13);
+      --gold-glow: rgba(201,168,76,0.22);
+      --bg:        #07080d;
+      --bg2:       #0b0d14;
+      --surface:   #101218;
+      --surface2:  #13151e;
+      --border:    #1a1d28;
+      --border2:   #242738;
+      --text:      #e4e0d8;
+      --muted:     #58586c;
+      --dim:       #2a2d3c;
+      --green:     #3d9b5c;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── CUSTOM CURSOR (desktop only) ── */
+    @media (hover: hover) and (pointer: fine) {
+      * { cursor: none; }
+      #cursor {
+        width: 9px; height: 9px;
+        background: var(--gold);
+        border-radius: 50%;
+        position: fixed; top: 0; left: 0;
+        pointer-events: none; z-index: 9999;
+        mix-blend-mode: difference;
+        will-change: transform;
+      }
+      #cursor-ring {
+        width: 34px; height: 34px;
+        border: 1.5px solid rgba(201,168,76,0.45);
+        border-radius: 50%;
+        position: fixed; top: 0; left: 0;
+        pointer-events: none; z-index: 9998;
+        will-change: transform;
+        transition: width 0.3s, height 0.3s, border-color 0.3s;
+      }
+      .cursor-grow #cursor-ring { width: 52px; height: 52px; border-color: var(--gold); }
+    }
+
+    /* ── NOISE ── */
+    .noise {
+      position: fixed; inset: 0; z-index: 900; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.45;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 800;
+      padding: 1.1rem 2.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.4s, backdrop-filter 0.4s, border-color 0.4s;
+      border-bottom: 1px solid transparent;
+    }
+    nav.scrolled {
+      background: rgba(7,8,13,0.86);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      border-color: var(--border);
+    }
+
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.55rem;
+      letter-spacing: 0.18em;
+      background: linear-gradient(135deg, var(--gold-lt), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .nav-right { display: flex; align-items: center; gap: 1.8rem; }
+
+    .nav-links { display: flex; gap: 1.8rem; list-style: none; }
+    .nav-links a {
+      font-size: 0.76rem; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted); text-decoration: none; transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--gold-lt); }
+
+    .nav-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: var(--gold-dim);
+      border: 1px solid rgba(201,168,76,0.3);
+      color: var(--gold); text-decoration: none;
+      padding: 0.5rem 1.25rem; border-radius: 99px;
+      font-size: 0.76rem; font-weight: 600; letter-spacing: 0.08em; white-space: nowrap;
+      transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+    }
+    .nav-btn:hover {
+      background: rgba(201,168,76,0.2); border-color: var(--gold);
+      color: var(--gold-lt); transform: translateY(-1px);
+    }
+
+    /* Mobile hamburger */
+    .nav-hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      background: none; border: none; padding: 4px;
+    }
+    .nav-hamburger span {
+      display: block; width: 22px; height: 1.5px;
+      background: var(--muted); border-radius: 99px; transition: background 0.2s;
+    }
+    .nav-hamburger:hover span { background: var(--gold); }
+
+    /* Mobile drawer */
+    .nav-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 840;
+      display: none; opacity: 0; transition: opacity 0.3s;
+    }
+    .nav-overlay.open { display: block; opacity: 1; }
+
+    .nav-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0; width: 260px;
+      background: var(--bg2); border-left: 1px solid var(--border);
+      z-index: 850; padding: 5rem 2rem 2rem;
+      display: flex; flex-direction: column; gap: 1.4rem;
+      transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.22,1,0.36,1);
+    }
+    .nav-drawer.open { transform: translateX(0); }
+    .nav-drawer a {
+      font-size: 0.88rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted); text-decoration: none;
+      padding: 0.5rem 0; border-bottom: 1px solid var(--border); transition: color 0.2s;
+    }
+    .nav-drawer a:hover { color: var(--gold); }
+    .nav-drawer .nav-btn { margin-top: 0.5rem; justify-content: center; }
+    .drawer-close {
+      position: absolute; top: 1.2rem; right: 1.2rem;
+      background: none; border: none; color: var(--muted); font-size: 1.3rem; line-height: 1;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative; min-height: 100svh;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; padding: 7rem 2rem 6rem;
+    }
+
+    /* Poster wall */
+    .poster-wall {
+      position: absolute; inset: -5%;
+      display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px;
+      opacity: 0.16; filter: saturate(0.35) brightness(0.55);
+      transform: skewY(-5deg) scale(1.15); pointer-events: none;
+    }
+    .poster-col { display: flex; flex-direction: column; gap: 8px; }
+    .poster-col:nth-child(even) { margin-top: -70px; }
+    .poster-item { border-radius: 5px; overflow: hidden; aspect-ratio: 2/3; background: var(--surface); flex-shrink: 0; }
+    .poster-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .scanlines {
+      position: absolute; inset: 0; pointer-events: none;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.025) 2px, rgba(0,0,0,0.025) 4px);
+    }
+    .hero-vignette {
+      position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 85% 85% at 50% 50%, rgba(7,8,13,0.55) 0%, rgba(7,8,13,0.92) 100%),
+                  linear-gradient(to bottom, rgba(7,8,13,0.3) 0%, transparent 30%, transparent 70%, rgba(7,8,13,0.5) 100%);
+    }
+    .hero-glow {
+      position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 70% 50% at 50% 40%, rgba(201,168,76,0.07) 0%, transparent 65%);
+    }
+
+    /* Hero content */
+    .hero-content {
+      position: relative; z-index: 10; text-align: center;
+      max-width: 860px; width: 100%;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.55rem;
+      background: rgba(201,168,76,0.09); border: 1px solid rgba(201,168,76,0.22);
+      border-radius: 99px; padding: 0.38rem 1.1rem;
+      font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold);
+      margin-bottom: 2rem; animation: fadeUp 0.8s ease both;
+    }
+    .pulse-dot {
+      width: 6px; height: 6px; background: var(--gold); border-radius: 50%; flex-shrink: 0;
+      animation: pulseDot 2.2s ease infinite;
+    }
+    @keyframes pulseDot {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:0.35; transform:scale(0.6); }
+    }
+
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4.5rem, 15vw, 11rem);
+      letter-spacing: 0.05em; line-height: 0.88;
+      margin-bottom: 0.15em; animation: fadeUp 0.8s 0.1s ease both;
+    }
+    .line-solid {
+      display: block;
+      background: linear-gradient(160deg, var(--gold-lt) 0%, var(--gold) 45%, #a07528 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .line-outline {
+      display: block; font-size: 0.48em; letter-spacing: 0.38em;
+      color: transparent; -webkit-text-stroke: 1px rgba(201,168,76,0.25);
+      margin-top: 0.18em; padding-left: 0.38em;
+    }
+
+    .hero-desc {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1rem, 2.8vw, 1.35rem); font-weight: 300; font-style: italic;
+      color: #78788a; line-height: 1.75;
+      max-width: 560px; margin: 0 auto 3rem;
+      animation: fadeUp 0.8s 0.2s ease both;
+    }
+
+    /* CTA buttons */
+    .hero-cta-group {
+      display: flex; align-items: center; justify-content: center;
+      gap: 1rem; flex-wrap: wrap;
+      animation: fadeUp 0.8s 0.3s ease both; margin-bottom: 3rem;
+    }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 0.55rem;
+      background: linear-gradient(135deg, var(--gold), #9c7728);
+      color: #07080d; text-decoration: none; font-weight: 700;
+      font-size: 0.88rem; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 0.95rem 2.2rem; border-radius: 99px;
+      transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 40px rgba(201,168,76,0.2), 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .btn-primary:hover {
+      opacity: 0.9; transform: translateY(-2px);
+      box-shadow: 0 0 60px rgba(201,168,76,0.3), 0 8px 30px rgba(0,0,0,0.5);
+    }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: transparent; border: 1px solid var(--border2);
+      color: var(--muted); text-decoration: none;
+      font-size: 0.84rem; letter-spacing: 0.06em;
+      padding: 0.95rem 2rem; border-radius: 99px;
+      transition: border-color 0.2s, color 0.2s, transform 0.2s;
+    }
+    .btn-secondary:hover {
+      border-color: rgba(201,168,76,0.35); color: var(--gold-lt); transform: translateY(-2px);
+    }
+
+    /* Feature pills */
+    .hero-pills {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 0.55rem;
+      animation: fadeUp 0.8s 0.4s ease both;
+    }
+    .hero-pill {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      border-radius: 99px; padding: 0.32rem 0.9rem;
+      font-size: 0.72rem; color: var(--muted); letter-spacing: 0.05em;
+    }
+
+    /* Stats bar */
+    .hero-stats {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid var(--border);
+      background: rgba(7,8,13,0.72);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      animation: fadeUp 0.8s 0.6s ease both;
+    }
+    .hero-stat {
+      padding: 1.1rem 1rem; text-align: center;
+      border-right: 1px solid var(--border);
+    }
+    .hero-stat:last-child { border-right: none; }
+    .hs-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.9rem; letter-spacing: 0.05em; color: var(--gold-lt); line-height: 1;
+    }
+    .hs-lbl {
+      font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.16em;
+      color: var(--muted); margin-top: 0.25rem;
+    }
+
+    /* ── MARQUEE ── */
+    .marquee-wrap {
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      background: var(--bg2); padding: 1rem 0; overflow: hidden;
+    }
+    .marquee-track {
+      display: flex; gap: 2.5rem;
+      animation: marqueeScroll 28s linear infinite; white-space: nowrap;
+    }
+    @keyframes marqueeScroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    .marquee-item {
+      font-family: 'Bebas Neue', sans-serif; font-size: 0.92rem;
+      letter-spacing: 0.22em; color: var(--dim); flex-shrink: 0;
+      display: inline-flex; align-items: center; gap: 1rem;
+    }
+    .m-dot { width: 4px; height: 4px; background: var(--gold); border-radius: 50%; opacity: 0.45; flex-shrink: 0; }
+
+    /* ── SECTION COMMON ── */
+    .section-wrap { max-width: 1180px; margin: 0 auto; padding: 7rem 2rem; }
+
+    .label-row { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; }
+    .label-line { width: 28px; height: 1px; background: var(--gold); flex-shrink: 0; }
+    .label-text { font-size: 0.68rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold); }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.4rem, 6vw, 4.8rem); letter-spacing: 0.07em; line-height: 0.95;
+      color: var(--text); margin-bottom: 1.2rem;
+    }
+    .section-desc {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1rem, 2vw, 1.2rem); font-weight: 300; font-style: italic;
+      color: var(--muted); line-height: 1.85; max-width: 500px; margin-bottom: 3.5rem;
+    }
+
+    /* ── BENTO ── */
+    .bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1rem; }
+
+    .bento-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; overflow: hidden; position: relative;
+      transition: border-color 0.28s, transform 0.3s;
+    }
+    .bento-card::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .bento-card:hover { border-color: rgba(201,168,76,0.25); transform: translateY(-3px); }
+    .bento-card:hover::after { opacity: 1; }
+
+    .bc-main  { grid-column: span 7; }
+    .bc-top-r { grid-column: span 5; }
+    .bc-mid-r { grid-column: span 5; }
+    .bc-bot-l { grid-column: span 4; }
+    .bc-bot-m { grid-column: span 4; }
+    .bc-bot-r { grid-column: span 4; }
+
+    .bc-inner { padding: 2rem; height: 100%; display: flex; flex-direction: column; }
+    .bc-icon { font-size: 2rem; margin-bottom: 1.1rem; filter: drop-shadow(0 0 18px var(--gold-glow)); }
+    .bc-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.45rem; letter-spacing: 0.08em; color: var(--gold-lt); margin-bottom: 0.55rem; }
+    .bc-desc { font-size: 0.83rem; line-height: 1.78; color: var(--muted); flex: 1; }
+
+    /* Mock UI */
+    .mock-ui { margin-top: 1.5rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    .mock-titlebar { display: flex; align-items: center; gap: 0.4rem; padding: 0.55rem 1rem; background: var(--bg); border-bottom: 1px solid var(--border); }
+    .mock-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .mock-dot.r { background: #b84a4a; }
+    .mock-dot.y { background: #c9a84c; }
+    .mock-dot.g { background: #3d9b5c; }
+    .mock-body { padding: 1rem; }
+
+    .mock-kpi-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.5rem; margin-bottom: 0.75rem; }
+    .mock-kpi { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 0.6rem 0.5rem; text-align: center; }
+    .mock-kpi-v { font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; color: var(--gold-lt); }
+    .mock-kpi-l { font-size: 0.57rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+
+    .mock-chart { height: 64px; display: flex; align-items: flex-end; gap: 3px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 8px 8px 0; }
+    .mock-bar-el { flex: 1; border-radius: 3px 3px 0 0; background: rgba(201,168,76,0.55); min-height: 4px; }
+
+    .mock-movie-list { margin-top: 1.4rem; display: flex; flex-direction: column; gap: 0.55rem; }
+    .mock-movie-row {
+      display: flex; align-items: center; gap: 0.7rem;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 11px; padding: 0.6rem 0.85rem; transition: border-color 0.2s;
+    }
+    .mock-movie-row:hover { border-color: var(--border2); }
+    .mock-movie-icon { font-size: 1.4rem; width: 38px; height: 52px; display: flex; align-items: center; justify-content: center; background: var(--dim); border-radius: 7px; flex-shrink: 0; }
+    .mock-movie-info { flex: 1; min-width: 0; }
+    .mock-movie-title { font-size: 0.79rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mock-movie-meta  { font-size: 0.66rem; color: var(--muted); margin-top: 2px; }
+    .mock-movie-badge { background: var(--gold-dim); border: 1px solid rgba(201,168,76,0.28); color: var(--gold); border-radius: 99px; padding: 0.15rem 0.55rem; font-size: 0.63rem; white-space: nowrap; flex-shrink: 0; }
+
+    /* ── HIGHLIGHT ROWS ── */
+    .highlight-row {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 5rem; align-items: center;
+      padding: 5rem 2rem; max-width: 1180px; margin: 0 auto;
+    }
+    .highlight-row.flip { direction: rtl; }
+    .highlight-row.flip > * { direction: ltr; }
+
+    .screen-mock {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; overflow: hidden;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.55); position: relative;
+    }
+    .screen-mock-glow {
+      position: absolute; top: -40px; right: -40px;
+      width: 160px; height: 160px;
+      background: radial-gradient(circle, var(--gold-glow), transparent 70%);
+      pointer-events: none;
+    }
+    .screen-bar { display: flex; align-items: center; gap: 0.4rem; padding: 0.75rem 1rem; background: var(--bg2); border-bottom: 1px solid var(--border); }
+    .screen-body { padding: 1.5rem; }
+
+    .sim-chart-box {
+      height: 130px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1rem; margin-bottom: 1rem; position: relative; overflow: hidden;
+    }
+    .sim-chart-svg { width: 100%; height: 90px; overflow: visible; }
+
+    .sim-people { display: flex; gap: 0.5rem; }
+    .sim-person-card { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 0.5rem 0.4rem; text-align: center; }
+    .sim-avatar { width: 100%; aspect-ratio: 1/1; background: var(--dim); border-radius: 8px; margin-bottom: 0.35rem; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+    .sim-pname { font-size: 0.55rem; color: var(--muted); line-height: 1.3; }
+
+    .sim-radar-wrap { display: flex; align-items: center; justify-content: center; padding: 0.5rem 0; }
+
+    .hl-text .label-row { margin-bottom: 0.8rem; }
+    .hl-features { display: flex; flex-direction: column; gap: 0.85rem; margin-top: 1.8rem; }
+    .hl-feature {
+      display: flex; align-items: flex-start; gap: 0.85rem; padding: 0.85rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 13px; transition: border-color 0.2s;
+    }
+    .hl-feature:hover { border-color: var(--border2); }
+    .hl-feature-icon { font-size: 1.15rem; flex-shrink: 0; margin-top: 1px; }
+    .hl-feature-body { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+    .hl-feature-body strong { color: var(--text); display: block; margin-bottom: 0.15rem; }
+
+    /* ── STEPS ── */
+    .steps-section { padding: 6rem 2rem; max-width: 1000px; margin: 0 auto; text-align: center; }
+    .steps-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 2rem; position: relative; margin-top: 4rem;
+    }
+    .steps-grid::before {
+      content: ''; position: absolute; top: 27px;
+      left: calc(16.67% + 1rem); right: calc(16.67% + 1rem);
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border2), var(--border2), transparent);
+    }
+    .step { display: flex; flex-direction: column; align-items: center; }
+    .step-circle {
+      width: 54px; height: 54px; border-radius: 50%;
+      border: 1px solid var(--border2); background: var(--surface);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.35rem; letter-spacing: 0.05em; color: var(--gold);
+      margin-bottom: 1.3rem; position: relative; z-index: 1;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .step:hover .step-circle { border-color: var(--gold); box-shadow: 0 0 24px var(--gold-glow); }
+    .step-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.15rem; letter-spacing: 0.09em; color: var(--gold-lt); margin-bottom: 0.6rem; }
+    .step-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.72; }
+
+    /* ── CTA ── */
+    .cta-section { position: relative; text-align: center; padding: 6rem 2rem 8rem; overflow: hidden; }
+    .cta-radial {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 700px; height: 350px;
+      background: radial-gradient(ellipse, rgba(201,168,76,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-title {
+      font-family: 'Bebas Neue', sans-serif; font-size: clamp(3rem, 9vw, 7rem);
+      letter-spacing: 0.07em; line-height: 0.9; color: var(--text);
+      margin-bottom: 1.4rem; position: relative;
+    }
+    .cta-title span {
+      background: linear-gradient(135deg, var(--gold-lt), var(--gold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .cta-sub {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;
+      font-style: italic; color: var(--muted); margin-bottom: 2.5rem;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border); padding: 2rem 2.5rem;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 0.18em;
+      background: linear-gradient(135deg, var(--gold-lt), var(--gold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .footer-mid { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.07em; text-align: center; }
+    .footer-right { font-size: 0.67rem; color: var(--dim); letter-spacing: 0.05em; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-d1 { transition-delay: 0.1s; }
+    .reveal-d2 { transition-delay: 0.2s; }
+    .reveal-d3 { transition-delay: 0.3s; }
+
+    /* ── TABLET (≤1024px) ── */
+    @media (max-width: 1024px) {
+      .bento { grid-template-columns: repeat(6, 1fr); }
+      .bc-main  { grid-column: span 6; }
+      .bc-top-r { grid-column: span 3; }
+      .bc-mid-r { grid-column: span 3; }
+      .bc-bot-l { grid-column: span 2; }
+      .bc-bot-m { grid-column: span 2; }
+      .bc-bot-r { grid-column: span 2; }
+      .highlight-row { gap: 3rem; }
+    }
+
+    /* ── MOBILE (≤768px) ── */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.2rem; }
+      .nav-links, .nav-btn.desktop-only { display: none; }
+      .nav-hamburger { display: flex; }
+
+      .hero { padding: 6rem 1.5rem 5.5rem; }
+      .poster-wall { grid-template-columns: repeat(5,1fr); opacity: 0.11; }
+
+      .hero-title { font-size: clamp(4rem, 20vw, 6.5rem); }
+      .line-outline { letter-spacing: 0.2em; font-size: 0.52em; }
+      .hero-desc { font-size: 1rem; margin-bottom: 2.2rem; }
+
+      .hero-cta-group { gap: 0.75rem; }
+      .btn-primary { font-size: 0.82rem; padding: 0.88rem 1.8rem; }
+      .btn-secondary { font-size: 0.78rem; padding: 0.88rem 1.5rem; }
+
+      .hero-pills { gap: 0.4rem; }
+      .hero-pill { font-size: 0.68rem; padding: 0.28rem 0.75rem; }
+
+      .hero-stats { grid-template-columns: repeat(2,1fr); }
+      .hero-stat:nth-child(2) { border-right: none; }
+      .hero-stat { padding: 0.9rem 0.75rem; }
+      .hs-num { font-size: 1.5rem; }
+      .hs-lbl { font-size: 0.55rem; }
+
+      .section-wrap { padding: 4.5rem 1.5rem; }
+      .section-title { font-size: clamp(2rem, 9vw, 3rem); }
+
+      .bento { grid-template-columns: 1fr; gap: 0.85rem; }
+      .bc-main, .bc-top-r, .bc-mid-r, .bc-bot-l, .bc-bot-m, .bc-bot-r { grid-column: 1; }
+      .bc-inner { padding: 1.5rem; }
+
+      .highlight-row { grid-template-columns: 1fr; gap: 2.5rem; padding: 3.5rem 1.5rem; }
+      .highlight-row.flip { direction: ltr; }
+
+      .steps-section { padding: 4rem 1.5rem; }
+      .steps-grid { grid-template-columns: 1fr; gap: 2rem; margin-top: 3rem; }
+      .steps-grid::before { display: none; }
+
+      .cta-section { padding: 4.5rem 1.5rem 6rem; }
+      .cta-radial { width: 100%; }
+
+      footer { flex-direction: column; align-items: center; text-align: center; padding: 1.8rem 1.5rem; gap: 0.5rem; }
+    }
+
+    /* ── SMALL MOBILE (≤480px) ── */
+    @media (max-width: 480px) {
+      .hero-title { font-size: clamp(3.5rem, 22vw, 5.5rem); }
+      .hero-cta-group { flex-direction: column; align-items: stretch; }
+      .btn-primary, .btn-secondary { justify-content: center; width: 100%; }
+      .hero-pills { justify-content: center; }
+      .mock-kpi-row { grid-template-columns: repeat(3,1fr); }
+      .bc-inner { padding: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
+  <div class="noise"></div>
+
+  <!-- Mobile drawer overlay -->
+  <div class="nav-overlay" id="navOverlay" onclick="closeDrawer()"></div>
+  <div class="nav-drawer" id="navDrawer">
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+    <a href="#features" onclick="closeDrawer()">Features</a>
+    <a href="#how" onclick="closeDrawer()">How It Works</a>
+    <a href="/app" class="nav-btn">Launch App →</a>
+  </div>
+
+  <!-- ── NAV ── -->
+  <nav id="navbar">
+    <a class="nav-logo" href="#">CINEINSIGHTS</a>
+    <div class="nav-right">
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How It Works</a></li>
+      </ul>
+      <a href="/app" class="nav-btn desktop-only">Launch App →</a>
+      <button class="nav-hamburger" onclick="openDrawer()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="poster-wall" id="posterWall"></div>
+    <div class="scanlines"></div>
+    <div class="hero-vignette"></div>
+    <div class="hero-glow"></div>
+
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <span class="pulse-dot"></span>
+        Real-Time Movie Intelligence
+      </div>
+
+      <h1 class="hero-title">
+        <span class="line-solid">CINEINSIGHTS</span>
+        <span class="line-outline">MOVIE ANALYTICS</span>
+      </h1>
+
+      <p class="hero-desc">
+        Deep financial data, cast intelligence &amp; box office trends —
+        every film rendered as a cinematic dashboard.
+      </p>
+
+      <div class="hero-cta-group">
+        <a href="/app" class="btn-primary">
+          Launch Dashboard
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#features" class="btn-secondary">
+          Explore Features
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 7l4.5 4.5L11 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+      <div class="hero-pills">
+        <div class="hero-pill"><span>📊</span> 6 Analytics Charts</div>
+        <div class="hero-pill"><span>🎬</span> 500K+ Movies</div>
+        <div class="hero-pill"><span>⚡</span> Live TMDB Data</div>
+        <div class="hero-pill"><span>🆓</span> Free · No Signup</div>
+        <div class="hero-pill"><span>📱</span> Mobile Friendly</div>
+      </div>
+    </div>
+
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hs-num">500K+</div><div class="hs-lbl">Movies</div></div>
+      <div class="hero-stat"><div class="hs-num">Live</div><div class="hs-lbl">Real-Time</div></div>
+      <div class="hero-stat"><div class="hs-num">6</div><div class="hs-lbl">Chart Types</div></div>
+      <div class="hero-stat"><div class="hs-num">Free</div><div class="hs-lbl">No Account</div></div>
+    </div>
+  </section>
+
+  <!-- ── MARQUEE ── -->
+  <div class="marquee-wrap">
+    <div class="marquee-track" id="marqueeTrack"></div>
+  </div>
+
+  <!-- ── FEATURES ── -->
+  <section class="section-wrap" id="features">
+    <div class="label-row reveal"><div class="label-line"></div><span class="label-text">Core Features</span></div>
+    <h2 class="section-title reveal">EVERYTHING ABOUT<br/>A MOVIE IN ONE PLACE</h2>
+    <p class="section-desc reveal">Financial data, cast profiles, genre DNA, production companies — synthesized into one beautiful screen.</p>
+
+    <div class="bento">
+      <div class="bento-card bc-main reveal">
+        <div class="bc-inner">
+          <div class="bc-icon">📊</div>
+          <div class="bc-title">Financial Intelligence</div>
+          <p class="bc-desc">Budget vs. worldwide box office, ROI multiples, and profit/loss — with an animated performance bar and modelled revenue curve from release day to today.</p>
+          <div class="mock-ui">
+            <div class="mock-titlebar">
+              <div class="mock-dot r"></div><div class="mock-dot y"></div><div class="mock-dot g"></div>
+            </div>
+            <div class="mock-body">
+              <div class="mock-kpi-row">
+                <div class="mock-kpi"><div class="mock-kpi-v">$2.9B</div><div class="mock-kpi-l">Revenue</div></div>
+                <div class="mock-kpi"><div class="mock-kpi-v">$356M</div><div class="mock-kpi-l">Budget</div></div>
+                <div class="mock-kpi"><div class="mock-kpi-v" style="color:var(--green)">8.1×</div><div class="mock-kpi-l">ROI</div></div>
+              </div>
+              <div class="mock-chart" id="mockChart"></div>
+            </div>
+          </div>
+          <div class="mock-movie-list" id="mockMovieList"></div>
+        </div>
+      </div>
+
+      <div class="bento-card bc-top-r reveal reveal-d1">
+        <div class="bc-inner">
+          <div class="bc-icon">🎭</div>
+          <div class="bc-title">Cast &amp; Crew Profiles</div>
+          <p class="bc-desc">Director, lead actors and supporting cast with photos and character roles — up to 10 contributors per film, beautifully laid out in a responsive grid.</p>
+        </div>
+      </div>
+
+      <div class="bento-card bc-mid-r reveal reveal-d2">
+        <div class="bc-inner">
+          <div class="bc-icon">🎯</div>
+          <div class="bc-title">Genre Radar Chart</div>
+          <p class="bc-desc">A spider chart mapping each movie's DNA across 6 dimensions — Action, Adventure, Drama, Thriller, Comedy, Romance.</p>
+        </div>
+      </div>
+
+      <div class="bento-card bc-bot-l reveal reveal-d1">
+        <div class="bc-inner">
+          <div class="bc-icon">📈</div>
+          <div class="bc-title">Revenue Trend</div>
+          <p class="bc-desc">Cumulative and period-by-period modelled revenue from opening week through today.</p>
+        </div>
+      </div>
+
+      <div class="bento-card bc-bot-m reveal reveal-d2">
+        <div class="bc-inner">
+          <div class="bc-icon">🔥</div>
+          <div class="bc-title">Popularity Metrics</div>
+          <p class="bc-desc">Audience rating, TMDB popularity score and vote engagement — normalised and compared side by side.</p>
+        </div>
+      </div>
+
+      <div class="bento-card bc-bot-r reveal reveal-d3">
+        <div class="bc-inner">
+          <div class="bc-icon">🏢</div>
+          <div class="bc-title">Production Data</div>
+          <p class="bc-desc">Studio logos, countries of origin, spoken languages and collection membership at a glance.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HIGHLIGHT 1 ── -->
+  <div class="highlight-row reveal" id="how">
+    <div class="screen-mock">
+      <div class="screen-mock-glow"></div>
+      <div class="screen-bar">
+        <div class="mock-dot r"></div><div class="mock-dot y"></div><div class="mock-dot g"></div>
+      </div>
+      <div class="screen-body">
+        <div class="sim-chart-box">
+          <svg class="sim-chart-svg" viewBox="0 0 300 90" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="rgba(201,168,76,0.28)"/>
+                <stop offset="100%" stop-color="rgba(201,168,76,0.01)"/>
+              </linearGradient>
+            </defs>
+            <path d="M0,82 C50,78 70,65 100,42 C130,20 160,10 190,8 C215,7 240,10 270,10 L300,9 L300,90 L0,90 Z" fill="url(#cg)"/>
+            <path d="M0,82 C50,78 70,65 100,42 C130,20 160,10 190,8 C215,7 240,10 270,10 L300,9" fill="none" stroke="#c9a84c" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="100" cy="42" r="4" fill="#c9a84c"/>
+            <circle cx="190" cy="8" r="4" fill="#c9a84c"/>
+          </svg>
+        </div>
+        <div class="sim-people">
+          <div class="sim-person-card"><div class="sim-avatar">🎬</div><div class="sim-pname">Director</div></div>
+          <div class="sim-person-card"><div class="sim-avatar">⭐</div><div class="sim-pname">Lead</div></div>
+          <div class="sim-person-card"><div class="sim-avatar">🎭</div><div class="sim-pname">Cast</div></div>
+          <div class="sim-person-card"><div class="sim-avatar">🎭</div><div class="sim-pname">Cast</div></div>
+          <div class="sim-person-card"><div class="sim-avatar">🎭</div><div class="sim-pname">Cast</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hl-text">
+      <div class="label-row"><div class="label-line"></div><span class="label-text">Live Data</span></div>
+      <h3 class="section-title">REAL DATA.<br/>REAL TIME.</h3>
+      <p class="section-desc">Powered by The Movie Database API — every metric fetched live so numbers are always current.</p>
+      <div class="hl-features">
+        <div class="hl-feature"><span class="hl-feature-icon">⚡</span><div class="hl-feature-body"><strong>Instant results</strong>Search and see your full dashboard in under two seconds.</div></div>
+        <div class="hl-feature"><span class="hl-feature-icon">🎯</span><div class="hl-feature-body"><strong>500,000+ movies</strong>Every language, era and genre — from classics to latest releases.</div></div>
+        <div class="hl-feature"><span class="hl-feature-icon">📐</span><div class="hl-feature-body"><strong>Modelled revenue curves</strong>Simulate theatrical release distribution from opening day onwards.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── HIGHLIGHT 2 ── -->
+  <div class="highlight-row flip reveal">
+    <div class="hl-text">
+      <div class="label-row"><div class="label-line"></div><span class="label-text">Design</span></div>
+      <h3 class="section-title">CINEMATIC<br/>DASHBOARD UI</h3>
+      <p class="section-desc">Luxury dark aesthetic — film-grade typography, animated score rings, full-bleed backdrop and six live charts.</p>
+      <div class="hl-features">
+        <div class="hl-feature"><span class="hl-feature-icon">🖥️</span><div class="hl-feature-body"><strong>Full-screen layout</strong>Sticky sidebar, wide content canvas, responsive at every breakpoint.</div></div>
+        <div class="hl-feature"><span class="hl-feature-icon">📱</span><div class="hl-feature-body"><strong>Mobile-first responsive</strong>Collapses gracefully on phones and tablets — no pinch-to-zoom needed.</div></div>
+        <div class="hl-feature"><span class="hl-feature-icon">🌈</span><div class="hl-feature-body"><strong>6 interactive charts</strong>Line, bar, horizontal bar, radar, financial breakdown &amp; score ring.</div></div>
+      </div>
+    </div>
+
+    <div class="screen-mock">
+      <div class="screen-mock-glow" style="left:-40px;right:auto;"></div>
+      <div class="screen-bar">
+        <div class="mock-dot r"></div><div class="mock-dot y"></div><div class="mock-dot g"></div>
+      </div>
+      <div class="screen-body">
+        <div class="mock-kpi-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.2rem">
+          <div class="mock-kpi"><div class="mock-kpi-v" style="color:var(--green)">8.8</div><div class="mock-kpi-l">Rating</div></div>
+          <div class="mock-kpi"><div class="mock-kpi-v">2h28m</div><div class="mock-kpi-l">Runtime</div></div>
+          <div class="mock-kpi"><div class="mock-kpi-v">$2.9B</div><div class="mock-kpi-l">Revenue</div></div>
+          <div class="mock-kpi"><div class="mock-kpi-v" style="color:var(--green)">8.2×</div><div class="mock-kpi-l">ROI</div></div>
+        </div>
+        <div class="sim-radar-wrap">
+          <svg viewBox="0 0 200 165" style="width:100%;max-width:240px;height:auto;">
+            <polygon points="100,22 168,63 146,130 54,130 32,63" fill="none" stroke="var(--border)" stroke-width="1"/>
+            <polygon points="100,42 148,72 133,113 67,113 52,72" fill="none" stroke="var(--border)" stroke-width="1"/>
+            <polygon points="100,62 128,81 118,97 82,97 72,81" fill="none" stroke="var(--border)" stroke-width="1"/>
+            <line x1="100" y1="22" x2="100" y2="62" stroke="var(--border)" stroke-width="0.8"/>
+            <line x1="168" y1="63" x2="128" y2="81" stroke="var(--border)" stroke-width="0.8"/>
+            <line x1="146" y1="130" x2="118" y2="97" stroke="var(--border)" stroke-width="0.8"/>
+            <line x1="54" y1="130" x2="82" y2="97" stroke="var(--border)" stroke-width="0.8"/>
+            <line x1="32" y1="63" x2="72" y2="81" stroke="var(--border)" stroke-width="0.8"/>
+            <polygon points="100,28 160,68 140,122 60,122 40,68" fill="rgba(201,168,76,0.13)" stroke="var(--gold)" stroke-width="2"/>
+            <circle cx="100" cy="28" r="3.5" fill="var(--gold)"/>
+            <circle cx="160" cy="68" r="3.5" fill="var(--gold)"/>
+            <circle cx="140" cy="122" r="3.5" fill="var(--gold)"/>
+            <circle cx="60" cy="122" r="3.5" fill="var(--gold)"/>
+            <circle cx="40" cy="68" r="3.5" fill="var(--gold)"/>
+            <text x="100" y="16" text-anchor="middle" fill="var(--muted)" font-size="9" font-family="DM Sans">Action</text>
+            <text x="176" y="67" text-anchor="start" fill="var(--muted)" font-size="9" font-family="DM Sans">Adventure</text>
+            <text x="152" y="143" text-anchor="middle" fill="var(--muted)" font-size="9" font-family="DM Sans">Drama</text>
+            <text x="48" y="143" text-anchor="middle" fill="var(--muted)" font-size="9" font-family="DM Sans">Thriller</text>
+            <text x="6" y="67" text-anchor="start" fill="var(--muted)" font-size="9" font-family="DM Sans">Comedy</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── HOW IT WORKS ── -->
+  <div class="steps-section">
+    <div class="label-row reveal" style="justify-content:center">
+      <div class="label-line"></div><span class="label-text">How It Works</span><div class="label-line"></div>
+    </div>
+    <h2 class="section-title reveal" style="margin-top:0.5rem">THREE STEPS TO<br/>MOVIE INTELLIGENCE</h2>
+    <p class="section-desc reveal" style="margin:0 auto 0;text-align:center;max-width:400px">No signup. No install. Open the app and go.</p>
+    <div class="steps-grid">
+      <div class="step reveal">
+        <div class="step-circle">01</div>
+        <div class="step-title">Open the App</div>
+        <p class="step-desc">Click "Launch Dashboard" — no account, no install. Works on any device instantly.</p>
+      </div>
+      <div class="step reveal reveal-d1">
+        <div class="step-circle">02</div>
+        <div class="step-title">Search a Movie</div>
+        <p class="step-desc">Type any title inside the app. Autocomplete suggests from 500,000+ films as you type.</p>
+      </div>
+      <div class="step reveal reveal-d2">
+        <div class="step-circle">03</div>
+        <div class="step-title">Explore Analytics</div>
+        <p class="step-desc">Six live charts, full cast grid, financial breakdown, genre radar — all rendered instantly.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CTA ── -->
+  <section class="cta-section">
+    <div class="cta-radial"></div>
+    <h2 class="cta-title reveal">START EXPLORING<br/><span>MOVIE DATA</span></h2>
+    <p class="cta-sub reveal">Free forever · No account required · 500,000+ movies</p>
+    <a href="/app" class="btn-primary reveal" style="font-size:0.95rem;padding:1.1rem 2.8rem;display:inline-flex;">
+      Launch the Dashboard
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <div class="footer-logo">CINEINSIGHTS</div>
+    <div class="footer-mid">© 2025 CineInsights · Powered by TMDB API</div>
+    <div class="footer-right">Data provided by The Movie Database</div>
+  </footer>
+
+  <script>
+    /* ── CUSTOM CURSOR ── */
+    const cursor = document.getElementById("cursor");
+    const ring   = document.getElementById("cursor-ring");
+    if (cursor && ring && window.matchMedia("(hover:hover) and (pointer:fine)").matches) {
+      let mx=0,my=0,rx=0,ry=0;
+      document.addEventListener("mousemove", e => {
+        mx=e.clientX; my=e.clientY;
+        cursor.style.transform=`translate(${mx-4.5}px,${my-4.5}px)`;
+      });
+      (function raf(){
+        rx+=(mx-rx)*0.11; ry+=(my-ry)*0.11;
+        ring.style.transform=`translate(${rx-17}px,${ry-17}px)`;
+        requestAnimationFrame(raf);
+      })();
+      document.querySelectorAll("a,button,.bento-card,.hl-feature,.step").forEach(el=>{
+        el.addEventListener("mouseenter",()=>document.body.classList.add("cursor-grow"));
+        el.addEventListener("mouseleave",()=>document.body.classList.remove("cursor-grow"));
+      });
+    }
+
+    /* ── NAV SCROLL ── */
+    const navbar = document.getElementById("navbar");
+    window.addEventListener("scroll",()=>{
+      navbar.classList.toggle("scrolled", window.scrollY > 50);
+    },{passive:true});
+
+    /* ── MOBILE DRAWER ── */
+    function openDrawer(){
+      document.getElementById("navDrawer").classList.add("open");
+      document.getElementById("navOverlay").classList.add("open");
+      document.body.style.overflow="hidden";
+    }
+    function closeDrawer(){
+      document.getElementById("navDrawer").classList.remove("open");
+      document.getElementById("navOverlay").classList.remove("open");
+      document.body.style.overflow="";
+    }
+
+    /* ── POSTER WALL ── */
+    const TMDB = "https://image.tmdb.org/t/p";
+    const POSTERS = [
+      "/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
+      "/8Y9OkRpLJhHhyL6klI15FkNNfRC.jpg",
+      "/pgqgaUx1cJb5oZQQ5v0tNARCeBp.jpg",
+      "/nkayOAUBUu4mMvyNf9iHSUiPjF1.jpg",
+      "/62HCnUTziyWcpDaBO2i1DX17ljH.jpg",
+      "/d5NXSklXo0qyIYkgV94XAgMIckC.jpg",
+      "/iuFNMS8vlodoB0TlrNMBkzOG3PG.jpg",
+      "/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg",
+      "/gEU2QniE6E77NI6lCU6MxlNBvIe.jpg",
+      "/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg",
+      "/iiZZdoQBEYBv6id8su7ImL0oCbD.jpg",
+      "/velWPhVMQeQKcxggNEU8YmIo52R.jpg",
+      "/hniZHBbRrQRBgfEqkJk0Y8yoQmS.jpg",
+      "/bOGkgRGdhrBYJSLpXaxhXVstddV.jpg",
+      "/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg",
+      "/rktDFPbfHfUbArZ6OOOKsXcv0Bm.jpg",
+      "/6DrHO1icds8OnRb2frEClnaliMV.jpg",
+      "/vfrQk5IPloGg1v9Rzbh2Eg3VGyM.jpg",
+      "/4m1Au3YkjqsxF8iwQy0fPYSxE0h.jpg",
+      "/sF1U4EUQS8YHUYjNl3pMGNIQyr0.jpg",
+      "/arBTpAFgub5KNFbSwfPirq2wWAL.jpg",
+      "/kuf6dutpsT0vSVehic3EZIqkOBt.jpg",
+      "/TU9NIjwzjoKPwQHoHshkFcQUCG.jpg",
+      "/zi1M0bkpQ5qL5TY25gG7eHXMbHs.jpg",
+    ];
+
+    (function buildWall(){
+      const wall = document.getElementById("posterWall");
+      const isMobile = window.innerWidth <= 600;
+      const cols = isMobile ? 5 : 8;
+      wall.style.gridTemplateColumns = `repeat(${cols},1fr)`;
+      for(let c=0;c<cols;c++){
+        const col=document.createElement("div");
+        col.className="poster-col";
+        for(let r=0;r<5;r++){
+          const idx=(c*5+r)%POSTERS.length;
+          const item=document.createElement("div");
+          item.className="poster-item";
+          const img=document.createElement("img");
+          img.src=`${TMDB}/w185${POSTERS[idx]}`;
+          img.alt=""; img.loading="lazy"; img.decoding="async";
+          item.appendChild(img); col.appendChild(item);
+        }
+        wall.appendChild(col);
+      }
+    })();
+
+    /* ── MARQUEE ── */
+    const TAGS=["Box Office Analytics","Cast Intelligence","Genre Radar","Revenue Trends","Financial Breakdown","Production Data","Audience Scores","500K+ Movies","Real-Time Data","ROI Calculator"];
+    (function(){
+      const track=document.getElementById("marqueeTrack");
+      const items=[...TAGS,...TAGS,...TAGS,...TAGS];
+      track.innerHTML=items.map(t=>`<div class="marquee-item">${t}<span class="m-dot"></span></div>`).join("");
+    })();
+
+    /* ── MOCK BAR CHART ── */
+    const barH=[15,30,52,70,88,96,94,90,85,78,72,66,60,54,48,43,38,34,30,27];
+    document.getElementById("mockChart").innerHTML=barH.map(h=>`<div class="mock-bar-el" style="height:${h}%"></div>`).join("");
+
+    /* ── MOCK MOVIE LIST ── */
+    const MOVIES=[
+      {icon:"🎬",title:"Avengers: Endgame",meta:"2019 · Action · $2.79B",badge:"8.1× ROI"},
+      {icon:"🦇",title:"The Dark Knight",  meta:"2008 · Action · $1.00B",badge:"5.5× ROI"},
+      {icon:"🏆",title:"Parasite",         meta:"2019 · Thriller · $264M",badge:"Palme d'Or"},
+    ];
+    document.getElementById("mockMovieList").innerHTML=MOVIES.map((m,i)=>`
+      <div class="mock-movie-row" style="animation-delay:${i*0.15+0.4}s">
+        <div class="mock-movie-icon">${m.icon}</div>
+        <div class="mock-movie-info">
+          <div class="mock-movie-title">${m.title}</div>
+          <div class="mock-movie-meta">${m.meta}</div>
+        </div>
+        <div class="mock-movie-badge">${m.badge}</div>
+      </div>`).join("");
+
+    /* ── SCROLL REVEAL ── */
+    const io=new IntersectionObserver(entries=>{
+      entries.forEach(e=>{ if(e.isIntersecting){e.target.classList.add("visible");io.unobserve(e.target);} });
+    },{threshold:0.1});
+    document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
+
+    /* ── SMOOTH SCROLL ANCHORS ── */
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{
+      a.addEventListener("click",e=>{
+        const t=document.querySelector(a.getAttribute("href"));
+        if(t){e.preventDefault();t.scrollIntoView({behavior:"smooth",block:"start"});}
+      });
+    });
+  </script>
+</body>
+</html>
