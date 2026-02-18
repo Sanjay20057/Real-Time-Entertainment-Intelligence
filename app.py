@@ -1,45 +1,42 @@
-from flask import Flask, send_from_directory, redirect, request
+from flask import Flask, send_from_directory
 import os
 
 app = Flask(__name__)
 
-# ── ROUTES ─────────────────────────────────────────────────────
+# ── ROUTES ─────────────────────────────────────────────
 
+# Landing page
 @app.route("/")
 def landing():
-    """Serve the landing page."""
     return send_from_directory(".", "landing.html")
 
 
+# Main dashboard page
 @app.route("/app")
 def dashboard():
-    """Serve the main CineInsights dashboard app."""
     return send_from_directory(".", "index.html")
 
 
-@app.route("/static/<path:filename>")
-def static_files(filename):
-    """Serve static assets (CSS, JS)."""
-    return send_from_directory(".", filename)
-
-
-# Allow style.css and script.js to be served from root too
+# Serve CSS
 @app.route("/style.css")
-def css():
+def serve_css():
     return send_from_directory(".", "style.css")
 
 
+# Serve JS
 @app.route("/script.js")
-def js():
+def serve_js():
     return send_from_directory(".", "script.js")
 
 
-# ── RUN ────────────────────────────────────────────────────────
+# Serve other static files if needed (images, etc.)
+@app.route("/<path:filename>")
+def serve_files(filename):
+    return send_from_directory(".", filename)
+
+
+# ── RUN SERVER ─────────────────────────────────────────
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    debug = os.environ.get("FLASK_DEBUG", "true").lower() == "true"
-    print(f"\n🎬  CineInsights running at http://localhost:{port}")
-    print(f"    Landing  → http://localhost:{port}/")
-    print(f"    App      → http://localhost:{port}/app\n")
-    app.run(debug=debug, port=port)
+    app.run(host="0.0.0.0", port=port)
