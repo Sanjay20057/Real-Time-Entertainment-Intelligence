@@ -295,18 +295,21 @@ body {
 .sidebar::-webkit-scrollbar { width: 4px; }
 .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 
+/* ── POSTER WRAP — desktop default ── */
 .sidebar-poster-wrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 2/3;
+  aspect-ratio: 2 / 3;   /* natural portrait ratio on desktop */
   flex-shrink: 0;
   overflow: hidden;
 }
 
+/* ── POSTER IMAGE ── */
 .sidebar-poster {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: top center;   /* always show top of poster (faces) */
   display: block;
   transition: transform 0.5s ease;
 }
@@ -315,7 +318,7 @@ body {
 .sidebar-poster-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, transparent 50%, var(--bg2) 100%);
+  background: linear-gradient(to bottom, transparent 60%, var(--bg2) 100%);
 }
 
 .sidebar-meta {
@@ -532,9 +535,7 @@ body {
   justify-content: flex-end;
 }
 
-.fin-quick-item {
-  text-align: right;
-}
+.fin-quick-item { text-align: right; }
 .fin-quick-item .fq-label {
   font-size: 0.6rem;
   text-transform: uppercase;
@@ -578,7 +579,6 @@ body {
 }
 .stat-ribbon-item:hover { background: rgba(201,168,76,0.04); }
 .stat-ribbon-item:hover::after { left: 0; right: 0; }
-
 .stat-ribbon-item:last-child { border-right: none; }
 
 .stat-rib-label {
@@ -601,7 +601,7 @@ body {
   font-weight: 500;
   color: var(--green-lt);
 }
-.stat-rib-sub.loss { color: var(--red-lt); }
+.stat-rib-sub.loss    { color: var(--red-lt); }
 .stat-rib-sub.neutral { color: var(--muted); }
 
 /* ── PROFIT BAR ─────────────────────────────────────── */
@@ -627,10 +627,7 @@ body {
   color: var(--gold);
 }
 
-.profit-bar-ratio {
-  font-size: 0.75rem;
-  color: var(--muted);
-}
+.profit-bar-ratio { font-size: 0.75rem; color: var(--muted); }
 
 .profit-bar-label {
   display: flex;
@@ -671,10 +668,7 @@ body {
   font-size: 0.73rem;
   color: var(--muted);
 }
-.profit-pill strong {
-  color: var(--text);
-  font-weight: 600;
-}
+.profit-pill strong { color: var(--text); font-weight: 600; }
 
 /* ── CHARTS MASTER GRID ─────────────────────────────── */
 .charts-master-grid {
@@ -710,14 +704,9 @@ body {
   color: var(--gold);
 }
 
-.chart-body {
-  padding: 1rem;
-}
+.chart-body { padding: 1rem; }
 
-.chart-tabs {
-  display: flex;
-  gap: 0.35rem;
-}
+.chart-tabs { display: flex; gap: 0.35rem; }
 
 .tab-btn {
   background: var(--surface2);
@@ -793,9 +782,7 @@ body {
   flex-shrink: 0;
 }
 
-.prod-info {
-  min-width: 0;
-}
+.prod-info { min-width: 0; }
 
 .prod-name {
   font-size: 0.8rem;
@@ -805,10 +792,7 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.prod-country {
-  font-size: 0.68rem;
-  color: var(--muted);
-}
+.prod-country { font-size: 0.68rem; color: var(--muted); }
 
 /* ── SECTION HEADER ─────────────────────────────────── */
 .section-header {
@@ -991,7 +975,12 @@ body {
   .meta-duo { grid-template-columns: 1fr 1fr; }
 }
 
-/* ── RESPONSIVE — MOBILE ────────────────────────────── */
+/* ════════════════════════════════════════
+   RESPONSIVE — MOBILE (≤768px)
+   KEY FIX: poster uses aspect-ratio 2/3
+   and object-position: top so full image
+   is visible without cropping
+════════════════════════════════════════ */
 @media (max-width: 768px) {
   :root { --header-h: 56px; }
 
@@ -1000,11 +989,9 @@ body {
   .header-sub { display: none; }
 
   /* Stack layout */
-  .app-layout {
-    grid-template-columns: 1fr;
-  }
+  .app-layout { grid-template-columns: 1fr; }
 
-  /* Sidebar becomes a top card on mobile */
+  /* Sidebar stacks on top */
   .sidebar {
     position: static;
     height: auto;
@@ -1013,14 +1000,23 @@ body {
     border-bottom: 1px solid var(--border);
   }
 
+  /* ── POSTER FIX ──
+     Use natural 2:3 aspect ratio instead of
+     a fixed height so the entire poster is shown.
+     object-position: top ensures faces/titles
+     at the top are always visible.
+  ── */
   .sidebar-poster-wrap {
-    aspect-ratio: unset;
-    height: 260px;
+    aspect-ratio: 2 / 3;
+    height: auto;
+    max-height: 75vw;   /* cap so it doesn't fill entire screen on landscape */
   }
 
-  .hero-backdrop {
-    height: 180px;
+  .sidebar-poster {
+    object-position: top center;
   }
+
+  .hero-backdrop { height: 180px; }
 
   .hero-top-bar {
     flex-direction: column;
@@ -1067,8 +1063,16 @@ body {
   .people-grid { grid-template-columns: repeat(3, 1fr); }
   .sidebar-stat-row { grid-template-columns: repeat(3, 1fr); }
   .hero-title { font-size: 1.6rem; }
+
+  /* Even on small phones keep poster proportional */
+  .sidebar-poster-wrap {
+    max-height: 85vw;
+  }
 }
 
 @media (max-width: 360px) {
   .people-grid { grid-template-columns: repeat(2, 1fr); }
+  .sidebar-poster-wrap {
+    max-height: 90vw;
+  }
 }
