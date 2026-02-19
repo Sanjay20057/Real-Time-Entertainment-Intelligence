@@ -118,11 +118,9 @@ const CHART_DEFAULTS = {
 /* ─────────────────────────────────────────────────────
    MOBILE FIXED SEARCH BAR
 ───────────────────────────────────────────────────── */
-// Wire up the mobile search bar (always visible, fixed below header)
 setupSearch(searchInputMobile, mobileSuggestions, true);
 attachKeyboardNav(searchInputMobile, mobileSuggestions);
 
-// Close mobile suggestions when clicking outside
 document.addEventListener("click", e => {
   if (!e.target.closest("#mobileSearchRow")) {
     mobileSuggestions.classList.add("hidden");
@@ -167,7 +165,6 @@ function setMode(mode) {
     .map(q => `<span class="hint-chip" data-query="${q}">${q}</span>`).join("");
   attachHintChips();
 
-  // Clear all search fields & suggestions
   [suggestionsList, suggestionsLanding, mobileSuggestions].forEach(s => s.classList.add("hidden"));
   searchInput.value = "";
   searchInputLanding.value = "";
@@ -240,7 +237,6 @@ async function fetchSuggestions(query, sugList, isMobile = false) {
       li.textContent  = `${name} (${year})`;
       li.dataset.id   = item.id;
       li.addEventListener("click", () => {
-        // Always update both desktop and mobile inputs with selection
         const label = `${name} (${year})`;
         searchInput.value       = label;
         searchInputMobile.value = label;
@@ -488,11 +484,9 @@ function renderShowDashboard(d, credits) {
     <div class="val" style="font-size:${i.val.length>12?'0.85rem':'1.1rem'}">${i.val}</div>
   </div>`).join("");
 
-  // Creators first in talent
   const lead = creators[0] ? { ...creators[0], job:"Creator" } : null;
   renderTalent(lead, cast.slice(0,9));
 
-  // Networks panel
   if (networks.length) {
     prodPanel.style.display = "block";
     prodPanelTitle.textContent = "📡 NETWORKS";
@@ -510,7 +504,6 @@ function renderShowDashboard(d, credits) {
     prodPanel.style.display = "none";
   }
 
-  // Seasons
   if (seasons.length) {
     seasonsSection.style.display = "block";
     seasonsGrid.innerHTML = seasons.map((s,i) => {
