@@ -14,12 +14,9 @@
   <style>
     /* ════════════════════════════════════════
        INDEX PAGE — OVERRIDES & ADDITIONS
-       Improves: mobile header, search UX,
-       dashboard layout, sidebar on mobile,
-       charts grid, people grid, meta duo
     ════════════════════════════════════════ */
 
-    /* ── BACK TO HOME — DESKTOP (inside header) ── */
+    /* ── BACK TO HOME — DESKTOP ── */
     .back-home-btn {
       display: inline-flex;
       align-items: center;
@@ -43,20 +40,16 @@
       color: var(--gold-lt);
       background: rgba(201,168,76,0.06);
     }
-    .back-home-btn svg {
-      flex-shrink: 0;
-      transition: transform 0.2s;
-    }
+    .back-home-btn svg { flex-shrink: 0; transition: transform 0.2s; }
     .back-home-btn:hover svg { transform: translateX(-2px); }
 
-    /* Hide desktop button on mobile */
     @media (max-width: 768px) {
       .back-home-desktop { display: none !important; }
     }
 
-    /* ── BACK TO HOME — MOBILE (inside sticky bar, above search) ── */
+    /* ── BACK TO HOME — MOBILE ── */
     .back-home-mobile {
-      display: none; /* shown only on mobile via media query */
+      display: none;
       align-items: center;
       gap: 0.45rem;
       color: var(--muted);
@@ -70,10 +63,7 @@
       transition: color 0.2s;
       width: fit-content;
     }
-    .back-home-mobile svg {
-      flex-shrink: 0;
-      transition: transform 0.2s;
-    }
+    .back-home-mobile svg { flex-shrink: 0; transition: transform 0.2s; }
     .back-home-mobile:hover { color: var(--gold-lt); }
     .back-home-mobile:hover svg { transform: translateX(-3px); }
 
@@ -114,7 +104,6 @@
     .mode-btn:hover:not(.active) { color: var(--text); }
 
     /* ── MOBILE STICKY SEARCH BAR ── */
-    /* Hidden by default; shown via media query below */
     .mobile-search-row {
       display: none;
       position: fixed;
@@ -216,14 +205,8 @@
     ════════════════════════════════════════ */
     @media (max-width: 1024px) {
       :root { --sidebar-w: 260px; }
-
-      .charts-master-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .meta-duo {
-        grid-template-columns: 1fr 1fr;
-      }
+      .charts-master-grid { grid-template-columns: 1fr 1fr; }
+      .meta-duo { grid-template-columns: 1fr 1fr; }
     }
 
     /* ════════════════════════════════════════
@@ -232,10 +215,9 @@
     @media (max-width: 768px) {
       :root {
         --header-h:        54px;
-        --mobile-search-h: 90px;  /* taller: back-home row + search input */
+        --mobile-search-h: 90px;
       }
 
-      /* Header */
       .header-inner {
         padding: 0 1rem !important;
         gap: 0.5rem !important;
@@ -244,10 +226,8 @@
       .header-sub { display: none !important; }
       #headerSearch { display: none !important; }
 
-      /* Show mobile sticky search bar */
       .mobile-search-row { display: block !important; }
 
-      /* Push content below header + search */
       .landing-screen {
         padding-top: calc(var(--header-h) + var(--mobile-search-h) + 1.5rem) !important;
       }
@@ -256,11 +236,9 @@
         grid-template-columns: 1fr !important;
       }
 
-      /* Mode toggle compact */
       .mode-toggle { padding: 2px; }
       .mode-btn { font-size: 0.68rem; padding: 0.28rem 0.6rem; }
 
-      /* Sidebar stacks on top */
       .sidebar {
         position: static !important;
         height: auto !important;
@@ -268,15 +246,21 @@
         border-right: none !important;
         border-bottom: 1px solid var(--border);
       }
+
+      /* ── POSTER FIX: use natural aspect ratio, anchor to top ── */
       .sidebar-poster-wrap {
-        aspect-ratio: unset !important;
-        height: 240px !important;
+        aspect-ratio: 2 / 3 !important;   /* restore natural poster ratio */
+        height: auto !important;           /* let aspect-ratio drive height */
+        max-height: 520px !important;      /* cap on very tall screens */
       }
+      .sidebar-poster {
+        object-position: top center !important;  /* show the top of the poster */
+      }
+
       .sidebar-overview {
         -webkit-line-clamp: 4 !important;
       }
 
-      /* Hero backdrop */
       .hero-backdrop { height: 180px !important; }
       .hero-top-bar {
         flex-direction: column !important;
@@ -287,7 +271,6 @@
       .hero-title { font-size: 1.5rem !important; }
       .hero-fin-quick { display: none !important; }
 
-      /* Stat ribbon */
       .stat-ribbon-item {
         min-width: 95px !important;
         padding: 0.65rem 0.75rem !important;
@@ -296,13 +279,11 @@
       .stat-rib-label  { font-size: 0.55rem !important; }
       .stat-rib-sub    { font-size: 0.6rem  !important; }
 
-      /* Show stat band */
       .show-stat-band {
         grid-template-columns: repeat(2, 1fr) !important;
         padding: 0.75rem 1rem 0 !important;
       }
 
-      /* Profit bar */
       .profit-bar-wrap {
         margin: 0.85rem 1rem !important;
         padding: 0.95rem 1.1rem !important;
@@ -310,7 +291,6 @@
       .profit-pill-row { flex-wrap: wrap !important; gap: 0.45rem !important; }
       .profit-pill { font-size: 0.68rem !important; padding: 0.3rem 0.65rem !important; }
 
-      /* Charts — single column */
       .charts-master-grid {
         grid-template-columns: 1fr !important;
         padding: 0.85rem !important;
@@ -319,7 +299,6 @@
       .chart-panel.span-2 { grid-column: 1 !important; }
       .chart-wrap { height: 210px !important; }
 
-      /* People grid */
       .people-grid {
         grid-template-columns: repeat(3, 1fr) !important;
         padding: 0 1rem !important;
@@ -328,32 +307,25 @@
       .person-name { font-size: 0.66rem !important; }
       .person-role { font-size: 0.58rem !important; }
 
-      /* Section headers */
       .section-header { padding: 0 1rem !important; }
 
-      /* Seasons */
-      .seasons-table {
-        padding: 0 1rem 1.2rem !important;
-      }
+      .seasons-table { padding: 0 1rem 1.2rem !important; }
       .seasons-grid {
         grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)) !important;
         gap: 0.5rem !important;
       }
 
-      /* Meta cards */
       .meta-duo {
         grid-template-columns: 1fr !important;
         padding: 0 1rem 1.5rem !important;
         gap: 0.65rem !important;
       }
 
-      /* Landing page adjustments */
       .landing-title h2  { font-size: clamp(2rem, 8vw, 3.5rem) !important; }
       .landing-title p   { font-size: 0.88rem !important; }
       .landing-icon      { font-size: 2.8rem !important; margin-bottom: 0.9rem !important; }
       .landing-search-box input { font-size: 0.95rem !important; }
 
-      /* Sidebar meta tweaks */
       .sidebar-title { font-size: 1.45rem !important; }
       .sidebar-stat-row { gap: 0.4rem !important; }
     }
@@ -384,6 +356,11 @@
       .profit-pill { font-size: 0.65rem !important; }
 
       .show-stat-card .val { font-size: 1.05rem !important; }
+
+      /* Slightly smaller poster on small phones */
+      .sidebar-poster-wrap {
+        max-height: 420px !important;
+      }
     }
 
     /* ════════════════════════════════════════
@@ -394,6 +371,10 @@
       .header-brand h1 { font-size: 1.25rem; }
       .mode-btn { font-size: 0.58rem; padding: 0.22rem 0.4rem; }
       .show-stat-band { grid-template-columns: 1fr 1fr !important; }
+
+      .sidebar-poster-wrap {
+        max-height: 380px !important;
+      }
     }
   </style>
 </head>
@@ -410,7 +391,6 @@
         <p class="header-sub">Real-Time Movie &amp; TV Intelligence</p>
       </div>
 
-      <!-- Back to Home — desktop only (mobile version is in the bar below header) -->
       <a href="/" class="back-home-btn back-home-desktop" title="Back to Home">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
           <path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -423,7 +403,6 @@
         <button class="mode-btn" data-mode="tv">📺 TV Shows</button>
       </div>
 
-      <!-- Desktop search (hidden on mobile via CSS) -->
       <div class="search-wrap" id="headerSearch">
         <div class="search-box">
           <span class="search-icon">⌕</span>
@@ -435,16 +414,14 @@
     </div>
   </header>
 
-  <!-- MOBILE STICKY BAR: Back to Home + Search -->
+  <!-- MOBILE STICKY BAR -->
   <div class="mobile-search-row" id="mobileSearchRow">
-    <!-- Back to Home row — mobile only -->
     <a href="/" class="back-home-mobile">
       <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
         <path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       Back to Home
     </a>
-    <!-- Search -->
     <div class="search-box">
       <span class="search-icon">⌕</span>
       <input type="text" id="searchInputMobile" placeholder="Search movies or shows…" autocomplete="off" />
