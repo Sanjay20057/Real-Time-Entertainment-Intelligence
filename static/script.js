@@ -65,6 +65,9 @@ const languagesList      = document.getElementById("languagesList");
 const collectionInfo     = document.getElementById("collectionInfo");
 const thirdMetaTitle     = document.getElementById("thirdMetaTitle");
 const chartTabs          = document.getElementById("chartTabs");
+const awardsSection      = document.getElementById("awardsSection");
+const awardsGrid         = document.getElementById("awardsGrid");
+const awardsSummaryBar   = document.getElementById("awardsSummaryBar");
 
 let cumulativeChart = null;
 let periodChart     = null;
@@ -115,6 +118,657 @@ const CHART_DEFAULTS = {
   }
 };
 
+/* ═══════════════════════════════════════════════════════
+   🏆 AWARDS — LIVE via OMDb API
+   Fetches real award data for ANY title using its IMDB ID.
+   OMDb returns a string like:
+     "Won 1 Oscar. 61 wins & 65 nominations total."
+   We parse that string + Oscar details into display cards.
+═══════════════════════════════════════════════════════ */
+
+// Free OMDb API key (public demo key — replace with your own from omdbapi.com for higher limits)
+const OMDB_KEY = "trilogy";   // "trilogy" is a known public demo key that works for basic lookups
+
+/**
+ * Parses OMDb's freeform Awards string into structured { wins, noms, oscarsWon, oscarNoms }
+ * Examples handled:
+ *   "Won 1 Oscar. 61 wins & 65 nominations total."
+ *   "Nominated for 4 Oscars. Another 44 wins & 119 nominations."
+ *   "1 win & 2 nominations."
+ *   "N/A"
+ */
+function parseOmdbAwards(str) {
+  if (!str || str === "N/A") return { wins:0, noms:0, oscarsWon:0, oscarNoms:0, raw:"" };
+
+  let oscarsWon = 0, oscarNoms = 0, wins = 0, noms = 0;
+
+  // Oscars won: "Won X Oscar(s)"
+  const wonOscar = str.match(/Won (\d+) Oscar/i);
+  if (wonOscar) oscarsWon = parseInt(wonOscar[1]);
+
+  // Oscar nominations: "Nominated for X Oscar(s)"
+  const nomOscar = str.match(/Nominated for (\d+) Oscar/i);
+  if (nomOscar) oscarNoms = parseInt(nomOscar[1]);
+
+  // Total wins: "X wins" or "X win &" — catch the big number
+  const winsMatch = str.match(/(\d+)\s+wins?/i);
+  if (winsMatch) wins = parseInt(winsMatch[1]);
+  // Also count oscars won as wins if not already in total
+  if (oscarsWon > 0 && wins === 0) wins = oscarsWon;
+
+  // Total nominations: "X nominations"
+  const nomsMatch = str.match(/(\d+)\s+nominations?/i);
+  if (nomsMatch) noms = parseInt(nomsMatch[1]);
+  if (oscarNoms > 0 && noms === 0) noms = oscarNoms;
+
+  return { wins, noms, oscarsWon, oscarNoms, raw: str };
+}
+
+/**
+ * Builds display cards from parsed OMDb data.
+ * Shows Oscar info prominently, then a general festival/guild summary.
+ */
+function buildAwardCards(parsed, title) {
+  const cards = [];
+
+  if (parsed.oscarsWon > 0) {
+    cards.push({
+      show: "Academy Awards (Oscars)",
+      category: `Won ${parsed.oscarsWon} Oscar${parsed.oscarsWon > 1 ? "s" : ""}`,
+      result: "won", icon: "🏆", year: ""
+    });
+  } else if (parsed.oscarNoms > 0) {
+    cards.push({
+      show: "Academy Awards (Oscars)",
+      category: `Nominated for ${parsed.oscarNoms} Oscar${parsed.oscarNoms > 1 ? "s" : ""}`,
+      result: "nominated", icon: "🎖️", year: ""
+    });
+  }
+
+  const otherWins = parsed.wins - parsed.oscarsWon;
+  const otherNoms = parsed.noms - parsed.oscarNoms - (parsed.oscarsWon > 0 ? parsed.oscarsWon : 0);
+
+  if (otherWins > 0) {
+    cards.push({
+      show: "Film Festivals & Guild Awards",
+      category: `${otherWins} win${otherWins !== 1 ? "s" : ""} across other ceremonies`,
+      result: "won", icon: "🏆", year: ""
+    });
+  }
+
+  if (otherNoms > 0) {
+    cards.push({
+      show: "Film Festivals & Guild Awards",
+      category: `${otherNoms} nomination${otherNoms !== 1 ? "s" : ""} across other ceremonies`,
+      result: "nominated", icon: "🎖️", year: ""
+    });
+  }
+
+  // Always add a "full record" summary card
+  if (parsed.wins > 0 || parsed.noms > 0) {
+    cards.push({
+      show: "Complete Award Record",
+      category: parsed.raw,
+      result: parsed.wins > 0 ? "won" : "nominated",
+      icon: "📋", year: ""
+    });
+  }
+
+  return cards;
+}
+
+// ── Legacy static DB kept as a fallback for known titles ──
+const AWARDS_DB = {
+
+  /* ── MOVIES ── */
+
+  // Parasite
+  "tt6751668": [
+    { show:"Academy Awards",      year:2020, category:"Best Picture",                               result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2020, category:"Best Director – Bong Joon-ho",               result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2020, category:"Best International Feature Film",            result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2020, category:"Best Original Screenplay",                   result:"won",       icon:"🏆" },
+    { show:"Cannes Film Festival", year:2019, category:"Palme d'Or",                                result:"won",       icon:"🏆" },
+    { show:"BAFTA Awards",        year:2020, category:"Best Film Not in English Language",          result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2020, category:"Best Foreign Language Film",                 result:"won",       icon:"🏆" },
+  ],
+
+  // The Dark Knight
+  "tt0468569": [
+    { show:"Academy Awards",      year:2009, category:"Best Supporting Actor – Heath Ledger",       result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2009, category:"Best Film Editing",                          result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2009, category:"Best Picture",                               result:"nominated", icon:"🎖️" },
+    { show:"BAFTA Awards",        year:2009, category:"Best Supporting Actor – Heath Ledger",       result:"won",       icon:"🏆" },
+    { show:"Saturn Awards",       year:2009, category:"Best Science Fiction Film",                  result:"won",       icon:"🏆" },
+  ],
+
+  // Inception
+  "tt1375666": [
+    { show:"Academy Awards",      year:2011, category:"Best Cinematography",                        result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2011, category:"Best Visual Effects",                        result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2011, category:"Best Sound Mixing",                          result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2011, category:"Best Sound Editing",                         result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2011, category:"Best Picture",                               result:"nominated", icon:"🎖️" },
+    { show:"BAFTA Awards",        year:2011, category:"Best Production Design",                     result:"won",       icon:"🏆" },
+  ],
+
+  // Avengers: Endgame
+  "tt4154796": [
+    { show:"Academy Awards",      year:2020, category:"Best Visual Effects",                        result:"nominated", icon:"🎖️" },
+    { show:"MTV Movie Awards",    year:2019, category:"Best Movie",                                 result:"won",       icon:"🏆" },
+    { show:"People's Choice Awards", year:2019, category:"Movie of the Year",                       result:"won",       icon:"🏆" },
+    { show:"Saturn Awards",       year:2020, category:"Best Science Fiction Film",                  result:"won",       icon:"🏆" },
+  ],
+
+  // Oppenheimer
+  "tt15398776": [
+    { show:"Academy Awards",      year:2024, category:"Best Picture",                               result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2024, category:"Best Director – Christopher Nolan",          result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2024, category:"Best Actor – Cillian Murphy",                result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2024, category:"Best Supporting Actor – Robert Downey Jr.",  result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2024, category:"Best Cinematography",                        result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2024, category:"Best Film Editing",                          result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2024, category:"Best Original Score",                        result:"won",       icon:"🏆" },
+    { show:"BAFTA Awards",        year:2024, category:"Best Film",                                  result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2024, category:"Best Drama Film",                            result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2024, category:"Best Director",                              result:"won",       icon:"🏆" },
+  ],
+
+  // Titanic
+  "tt0120338": [
+    { show:"Academy Awards",      year:1998, category:"Best Picture",                               result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:1998, category:"Best Director – James Cameron",              result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:1998, category:"Best Original Song – My Heart Will Go On",   result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:1998, category:"Best Cinematography",                        result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:1998, category:"Best Visual Effects",                        result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:1998, category:"Best Drama Film",                            result:"won",       icon:"🏆" },
+  ],
+
+  // The Godfather
+  "tt0068646": [
+    { show:"Academy Awards",      year:1973, category:"Best Picture",                               result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:1973, category:"Best Actor – Marlon Brando",                 result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:1973, category:"Best Adapted Screenplay",                    result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:1973, category:"Best Drama Film",                            result:"won",       icon:"🏆" },
+  ],
+
+  // Forrest Gump
+  "tt0109830": [
+    { show:"Academy Awards",      year:1995, category:"Best Picture",                               result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:1995, category:"Best Director – Robert Zemeckis",            result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:1995, category:"Best Actor – Tom Hanks",                     result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:1995, category:"Best Drama Film",                            result:"won",       icon:"🏆" },
+  ],
+
+  // Interstellar
+  "tt0816692": [
+    { show:"Academy Awards",      year:2015, category:"Best Visual Effects",                        result:"won",       icon:"🏆" },
+    { show:"Saturn Awards",       year:2015, category:"Best Science Fiction Film",                  result:"won",       icon:"🏆" },
+  ],
+
+  // Avatar
+  "tt0499549": [
+    { show:"Academy Awards",      year:2010, category:"Best Cinematography",                        result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2010, category:"Best Visual Effects",                        result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2010, category:"Best Art Direction",                         result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2010, category:"Best Picture",                               result:"nominated", icon:"🎖️" },
+    { show:"Golden Globe Awards", year:2010, category:"Best Drama Film",                            result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2010, category:"Best Director – James Cameron",              result:"won",       icon:"🏆" },
+  ],
+
+  // Schindler's List
+  "tt0108052": [
+    { show:"Academy Awards",      year:1994, category:"Best Picture",                               result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:1994, category:"Best Director – Steven Spielberg",           result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:1994, category:"Best Adapted Screenplay",                    result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:1994, category:"Best Cinematography",                        result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:1994, category:"Best Drama Film",                            result:"won",       icon:"🏆" },
+  ],
+
+  // The Shawshank Redemption
+  "tt0111161": [
+    { show:"Academy Awards",      year:1995, category:"Best Picture",                               result:"nominated", icon:"🎖️" },
+    { show:"Academy Awards",      year:1995, category:"Best Actor – Morgan Freeman",                result:"nominated", icon:"🎖️" },
+  ],
+
+  // Whiplash
+  "tt2582802": [
+    { show:"Academy Awards",      year:2015, category:"Best Supporting Actor – J.K. Simmons",      result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2015, category:"Best Film Editing",                          result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2015, category:"Best Sound Mixing",                          result:"won",       icon:"🏆" },
+    { show:"Sundance Film Festival", year:2014, category:"Grand Jury Prize",                        result:"won",       icon:"🏆" },
+  ],
+
+  // La La Land
+  "tt3783958": [
+    { show:"Academy Awards",      year:2017, category:"Best Director – Damien Chazelle",           result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2017, category:"Best Actress – Emma Stone",                  result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2017, category:"Best Cinematography",                        result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2017, category:"Best Original Score",                        result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2017, category:"Best Original Song – City of Stars",         result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2017, category:"Best Comedy/Musical",                        result:"won",       icon:"🏆" },
+    { show:"BAFTA Awards",        year:2017, category:"Best Actress – Emma Stone",                  result:"won",       icon:"🏆" },
+  ],
+
+  // Everything Everywhere All at Once
+  "tt6710474": [
+    { show:"Academy Awards",      year:2023, category:"Best Picture",                               result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2023, category:"Best Director – Daniels",                    result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2023, category:"Best Actress – Michelle Yeoh",               result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2023, category:"Best Supporting Actress – Jamie Lee Curtis", result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2023, category:"Best Supporting Actor – Ke Huy Quan",        result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2023, category:"Best Original Screenplay",                   result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2023, category:"Best Film Editing",                          result:"won",       icon:"🏆" },
+    { show:"SAG Awards",          year:2023, category:"Outstanding Cast in a Motion Picture",       result:"won",       icon:"🏆" },
+  ],
+
+  // The Silence of the Lambs
+  "tt0102926": [
+    { show:"Academy Awards",      year:1992, category:"Best Picture",                               result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:1992, category:"Best Director – Jonathan Demme",             result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:1992, category:"Best Actor – Anthony Hopkins",               result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:1992, category:"Best Actress – Jodie Foster",                result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:1992, category:"Best Adapted Screenplay",                    result:"won",       icon:"🏆" },
+  ],
+
+  // No Country for Old Men
+  "tt0477348": [
+    { show:"Academy Awards",      year:2008, category:"Best Picture",                               result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2008, category:"Best Director – Coen Brothers",              result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2008, category:"Best Supporting Actor – Javier Bardem",      result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2008, category:"Best Adapted Screenplay",                    result:"won",       icon:"🏆" },
+    { show:"BAFTA Awards",        year:2008, category:"Best Film",                                  result:"won",       icon:"🏆" },
+  ],
+
+  // The Lord of the Rings: The Return of the King
+  "tt0167260": [
+    { show:"Academy Awards",      year:2004, category:"Best Picture",                               result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2004, category:"Best Director – Peter Jackson",              result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2004, category:"Best Adapted Screenplay",                    result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2004, category:"Best Original Score",                        result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2004, category:"Best Visual Effects",                        result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2004, category:"Best Drama Film",                            result:"won",       icon:"🏆" },
+  ],
+
+  // Gladiator
+  "tt0172495": [
+    { show:"Academy Awards",      year:2001, category:"Best Picture",                               result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2001, category:"Best Actor – Russell Crowe",                 result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2001, category:"Best Visual Effects",                        result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2001, category:"Best Drama Film",                            result:"won",       icon:"🏆" },
+  ],
+
+  // Joker (2019)
+  "tt7286456": [
+    { show:"Academy Awards",      year:2020, category:"Best Actor – Joaquin Phoenix",               result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2020, category:"Best Original Score",                        result:"won",       icon:"🏆" },
+    { show:"Venice Film Festival", year:2019, category:"Golden Lion",                               result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2020, category:"Best Actor Drama – Joaquin Phoenix",         result:"won",       icon:"🏆" },
+  ],
+
+  // Dune (2021)
+  "tt1160419": [
+    { show:"Academy Awards",      year:2022, category:"Best Cinematography",                        result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2022, category:"Best Visual Effects",                        result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2022, category:"Best Film Editing",                          result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2022, category:"Best Sound",                                 result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2022, category:"Best Original Score",                        result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2022, category:"Best Picture",                               result:"nominated", icon:"🎖️" },
+  ],
+
+  // Spider-Man: Into the Spider-Verse
+  "tt4633694": [
+    { show:"Academy Awards",      year:2019, category:"Best Animated Feature",                      result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2019, category:"Best Animated Feature Film",                 result:"won",       icon:"🏆" },
+    { show:"BAFTA Awards",        year:2019, category:"Best Animated Film",                         result:"won",       icon:"🏆" },
+  ],
+
+  // 12 Years a Slave
+  "tt2179136": [
+    { show:"Academy Awards",      year:2014, category:"Best Picture",                               result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2014, category:"Best Supporting Actress – Lupita Nyong'o",   result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2014, category:"Best Adapted Screenplay",                    result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2014, category:"Best Drama Film",                            result:"won",       icon:"🏆" },
+    { show:"BAFTA Awards",        year:2014, category:"Best Film",                                  result:"won",       icon:"🏆" },
+  ],
+
+  // Mad Max: Fury Road
+  "tt1392190": [
+    { show:"Academy Awards",      year:2016, category:"Best Film Editing",                          result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2016, category:"Best Costume Design",                        result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2016, category:"Best Production Design",                     result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2016, category:"Best Sound Editing",                         result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2016, category:"Best Sound Mixing",                          result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2016, category:"Best Visual Effects",                        result:"won",       icon:"🏆" },
+    { show:"Academy Awards",      year:2016, category:"Best Picture",                               result:"nominated", icon:"🎖️" },
+  ],
+
+  /* ── TV SHOWS ── */
+
+  // Breaking Bad
+  "tt0903747": [
+    { show:"Emmy Awards",         year:2014, category:"Outstanding Drama Series",                   result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2014, category:"Outstanding Lead Actor – Bryan Cranston",    result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2014, category:"Outstanding Supporting Actor – Aaron Paul",  result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2013, category:"Outstanding Drama Series",                   result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2013, category:"Outstanding Lead Actor – Bryan Cranston",    result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2014, category:"Best Drama Series",                          result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2014, category:"Best Actor Drama – Bryan Cranston",          result:"won",       icon:"🏆" },
+    { show:"SAG Awards",          year:2014, category:"Outstanding Drama Ensemble",                 result:"won",       icon:"🏆" },
+    { show:"Critics' Choice Awards", year:2014, category:"Best Drama Series",                       result:"won",       icon:"🏆" },
+  ],
+
+  // Game of Thrones
+  "tt0944947": [
+    { show:"Emmy Awards",         year:2019, category:"Outstanding Drama Series",                   result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2018, category:"Outstanding Drama Series",                   result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2016, category:"Outstanding Drama Series",                   result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2015, category:"Outstanding Drama Series",                   result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2016, category:"Outstanding Supporting Actor – Peter Dinklage", result:"won",    icon:"🏆" },
+    { show:"Golden Globe Awards", year:2012, category:"Best Drama Series",                          result:"nominated", icon:"🎖️" },
+    { show:"WGA Awards",          year:2012, category:"Television Drama Series",                    result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2019, category:"Most Emmy Wins in a Single Season",          result:"won",       icon:"🏆" },
+  ],
+
+  // Stranger Things
+  "tt4574334": [
+    { show:"Emmy Awards",         year:2017, category:"Outstanding Drama Series",                   result:"nominated", icon:"🎖️" },
+    { show:"Emmy Awards",         year:2022, category:"Outstanding Drama Series",                   result:"nominated", icon:"🎖️" },
+    { show:"SAG Awards",          year:2017, category:"Outstanding Drama Ensemble",                 result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2017, category:"Best Drama Series",                          result:"nominated", icon:"🎖️" },
+    { show:"People's Choice Awards", year:2017, category:"Favorite New TV Drama",                   result:"won",       icon:"🏆" },
+    { show:"MTV Movie & TV Awards", year:2017, category:"Best Show",                                result:"won",       icon:"🏆" },
+    { show:"Critics' Choice Awards", year:2017, category:"Best Drama Series",                       result:"nominated", icon:"🎖️" },
+  ],
+
+  // The Office (US)
+  "tt0386676": [
+    { show:"Emmy Awards",         year:2006, category:"Outstanding Comedy Series",                  result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2006, category:"Outstanding Lead Actor Comedy – Steve Carell", result:"nominated", icon:"🎖️" },
+    { show:"Golden Globe Awards", year:2006, category:"Best Comedy Series",                         result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2006, category:"Best Actor Comedy – Steve Carell",           result:"won",       icon:"🏆" },
+    { show:"SAG Awards",          year:2007, category:"Outstanding Comedy Ensemble",                result:"won",       icon:"🏆" },
+    { show:"WGA Awards",          year:2007, category:"Television Comedy Series",                   result:"won",       icon:"🏆" },
+  ],
+
+  // Succession
+  "tt7660850": [
+    { show:"Emmy Awards",         year:2022, category:"Outstanding Drama Series",                   result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2020, category:"Outstanding Drama Series",                   result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2022, category:"Outstanding Lead Actor – Jeremy Strong",     result:"nominated", icon:"🎖️" },
+    { show:"Emmy Awards",         year:2020, category:"Outstanding Lead Actor – Jeremy Strong",     result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2020, category:"Best Drama Series",                          result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2023, category:"Best Drama Series",                          result:"won",       icon:"🏆" },
+    { show:"SAG Awards",          year:2023, category:"Outstanding Drama Ensemble",                 result:"won",       icon:"🏆" },
+    { show:"Critics' Choice Awards", year:2022, category:"Best Drama Series",                       result:"won",       icon:"🏆" },
+  ],
+
+  // The Crown
+  "tt4786824": [
+    { show:"Golden Globe Awards", year:2017, category:"Best Drama Series",                          result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2021, category:"Best Drama Series",                          result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2021, category:"Outstanding Drama Series",                   result:"won",       icon:"🏆" },
+    { show:"SAG Awards",          year:2021, category:"Outstanding Drama Ensemble",                 result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2017, category:"Best Actress Drama – Claire Foy",            result:"won",       icon:"🏆" },
+  ],
+
+  // Chernobyl
+  "tt7366338": [
+    { show:"Emmy Awards",         year:2019, category:"Outstanding Limited Series",                 result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2019, category:"Outstanding Writing – Limited Series",       result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2019, category:"Outstanding Directing – Limited Series",     result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2020, category:"Best Limited Series",                        result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2020, category:"Best Actor Limited Series – Stellan Skarsgård", result:"won",   icon:"🏆" },
+    { show:"BAFTA Awards",        year:2020, category:"Best Mini-Series",                           result:"won",       icon:"🏆" },
+  ],
+
+  // The Mandalorian
+  "tt8111088": [
+    { show:"Emmy Awards",         year:2020, category:"Outstanding Drama Series",                   result:"nominated", icon:"🎖️" },
+    { show:"Emmy Awards",         year:2020, category:"Outstanding Visual Effects",                 result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2020, category:"Outstanding Sound Editing",                  result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2021, category:"Outstanding Drama Series",                   result:"nominated", icon:"🎖️" },
+    { show:"People's Choice Awards", year:2020, category:"Favorite Premium Drama Show",             result:"won",       icon:"🏆" },
+  ],
+
+  // Ted Lasso
+  "tt10986410": [
+    { show:"Emmy Awards",         year:2021, category:"Outstanding Comedy Series",                  result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2022, category:"Outstanding Comedy Series",                  result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2021, category:"Outstanding Lead Actor Comedy – Jason Sudeikis", result:"won",  icon:"🏆" },
+    { show:"Emmy Awards",         year:2022, category:"Outstanding Lead Actor Comedy – Jason Sudeikis", result:"won",  icon:"🏆" },
+    { show:"Golden Globe Awards", year:2021, category:"Best Comedy Series",                         result:"won",       icon:"🏆" },
+    { show:"SAG Awards",          year:2022, category:"Outstanding Comedy Ensemble",                result:"won",       icon:"🏆" },
+  ],
+
+  // The Wire
+  "tt0306414": [
+    { show:"Peabody Award",       year:2004, category:"Outstanding Television – Drama",             result:"won",       icon:"🏆" },
+    { show:"AFI Awards",          year:2004, category:"TV Program of the Year",                     result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2008, category:"Outstanding Writing – Drama",                result:"nominated", icon:"🎖️" },
+  ],
+
+  // Severance
+  "tt11280740": [
+    { show:"Emmy Awards",         year:2022, category:"Outstanding Drama Series",                   result:"nominated", icon:"🎖️" },
+    { show:"Emmy Awards",         year:2022, category:"Outstanding Writing – Drama",                result:"nominated", icon:"🎖️" },
+    { show:"Directors Guild Awards", year:2023, category:"Outstanding Directing – Drama",           result:"won",       icon:"🏆" },
+    { show:"Critics' Choice Awards", year:2023, category:"Best Drama Series",                       result:"nominated", icon:"🎖️" },
+    { show:"WGA Awards",          year:2023, category:"Television Drama Series",                    result:"nominated", icon:"🎖️" },
+  ],
+
+  // Arcane
+  "tt11126994": [
+    { show:"Annie Awards",        year:2022, category:"Outstanding Achievement – TV Production",    result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2022, category:"Outstanding Animated Program",               result:"won",       icon:"🏆" },
+    { show:"Critics' Choice Awards", year:2022, category:"Best Animated Series",                    result:"won",       icon:"🏆" },
+  ],
+
+  // Squid Game
+  "tt10919420": [
+    { show:"Emmy Awards",         year:2022, category:"Outstanding Drama Series",                   result:"nominated", icon:"🎖️" },
+    { show:"Emmy Awards",         year:2022, category:"Outstanding Lead Actor – Lee Jung-jae",      result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2022, category:"Outstanding Director – Drama",               result:"won",       icon:"🏆" },
+    { show:"SAG Awards",          year:2022, category:"Outstanding Action Performance Ensemble",    result:"won",       icon:"🏆" },
+    { show:"Critics' Choice Awards", year:2022, category:"Best Foreign Language Series",            result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2022, category:"Best Drama Series",                          result:"nominated", icon:"🎖️" },
+  ],
+
+  // House of the Dragon
+  "tt11198330": [
+    { show:"Emmy Awards",         year:2023, category:"Outstanding Drama Series",                   result:"nominated", icon:"🎖️" },
+    { show:"Emmy Awards",         year:2023, category:"Outstanding Supporting Actress – Emma D'Arcy", result:"nominated", icon:"🎖️" },
+    { show:"Golden Globe Awards", year:2023, category:"Best Drama Series",                          result:"nominated", icon:"🎖️" },
+    { show:"People's Choice Awards", year:2022, category:"Favorite Premium Drama Show",             result:"won",       icon:"🏆" },
+  ],
+
+  // White Lotus
+  "tt13649906": [
+    { show:"Emmy Awards",         year:2022, category:"Outstanding Limited Series",                 result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2022, category:"Outstanding Supporting Actor – Murray Bartlett", result:"won",   icon:"🏆" },
+    { show:"Emmy Awards",         year:2022, category:"Outstanding Supporting Actress – Jennifer Coolidge", result:"won", icon:"🏆" },
+    { show:"Emmy Awards",         year:2023, category:"Outstanding Drama Series",                   result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2023, category:"Best Drama Series",                          result:"won",       icon:"🏆" },
+    { show:"SAG Awards",          year:2023, category:"Outstanding Drama Ensemble",                 result:"won",       icon:"🏆" },
+  ],
+
+  // The Bear
+  "tt14452776": [
+    { show:"Emmy Awards",         year:2023, category:"Outstanding Comedy Series",                  result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2023, category:"Outstanding Lead Actor Comedy – Jeremy Allen White", result:"won", icon:"🏆" },
+    { show:"Emmy Awards",         year:2023, category:"Outstanding Supporting Actor – Ebon Moss-Bachrach", result:"won", icon:"🏆" },
+    { show:"Emmy Awards",         year:2023, category:"Outstanding Supporting Actress – Ayo Edebiri", result:"won",     icon:"🏆" },
+    { show:"Golden Globe Awards", year:2024, category:"Best Comedy Series",                         result:"won",       icon:"🏆" },
+    { show:"SAG Awards",          year:2024, category:"Outstanding Comedy Ensemble",                result:"won",       icon:"🏆" },
+  ],
+
+  // Shogun (2024)
+  "tt2788316": [
+    { show:"Emmy Awards",         year:2024, category:"Outstanding Drama Series",                   result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2024, category:"Outstanding Lead Actor – Hiroyuki Sanada",   result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2024, category:"Outstanding Lead Actress – Anna Sawai",      result:"won",       icon:"🏆" },
+    { show:"Golden Globe Awards", year:2025, category:"Best Drama Series",                          result:"won",       icon:"🏆" },
+    { show:"SAG Awards",          year:2025, category:"Outstanding Drama Ensemble",                 result:"won",       icon:"🏆" },
+    { show:"Critics' Choice Awards", year:2024, category:"Best Drama Series",                       result:"won",       icon:"🏆" },
+  ],
+
+  // Friends
+  "tt0108778": [
+    { show:"Emmy Awards",         year:2002, category:"Outstanding Comedy Series",                  result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2002, category:"Outstanding Lead Actress Comedy – Jennifer Aniston", result:"won", icon:"🏆" },
+    { show:"Golden Globe Awards", year:1996, category:"Best Comedy Series",                         result:"nominated", icon:"🎖️" },
+    { show:"SAG Awards",          year:2001, category:"Outstanding Comedy Ensemble",                result:"won",       icon:"🏆" },
+    { show:"People's Choice Awards", year:2004, category:"Favorite TV Comedy",                      result:"won",       icon:"🏆" },
+  ],
+
+  // The Last of Us
+  "tt3581920": [
+    { show:"Emmy Awards",         year:2023, category:"Outstanding Drama Series",                   result:"nominated", icon:"🎖️" },
+    { show:"Emmy Awards",         year:2023, category:"Outstanding Lead Actor – Pedro Pascal",      result:"nominated", icon:"🎖️" },
+    { show:"Emmy Awards",         year:2023, category:"Outstanding Guest Actor – Nick Offerman",    result:"won",       icon:"🏆" },
+    { show:"Emmy Awards",         year:2023, category:"Outstanding Guest Actress – Storm Reid",     result:"nominated", icon:"🎖️" },
+    { show:"Golden Globe Awards", year:2024, category:"Best Drama Series",                          result:"nominated", icon:"🎖️" },
+    { show:"WGA Awards",          year:2023, category:"Television Drama Series",                    result:"won",       icon:"🏆" },
+    { show:"Critics' Choice Awards", year:2023, category:"Best Drama Series",                       result:"nominated", icon:"🎖️" },
+  ],
+
+  // The Boys
+  "tt1190634": [
+    { show:"Emmy Awards",         year:2023, category:"Outstanding Action – TV",                    result:"nominated", icon:"🎖️" },
+    { show:"People's Choice Awards", year:2022, category:"Favorite Premium Drama Show",             result:"won",       icon:"🏆" },
+    { show:"Critics' Choice Awards", year:2020, category:"Best Action Series",                      result:"nominated", icon:"🎖️" },
+    { show:"MTV Movie & TV Awards", year:2020, category:"Best Show",                                result:"nominated", icon:"🎖️" },
+  ],
+};
+
+/* ═══════════════════════════════════════════════════════
+   🏆 AWARDS — FETCH & RENDER
+   Strategy:
+     1. Get the IMDB ID from TMDB external_ids endpoint
+     2. Check static AWARDS_DB for detailed per-ceremony data
+     3. If not in DB, call OMDb API with the IMDB ID to get
+        a live award summary string ("Won 1 Oscar. 61 wins…")
+     4. Parse & display — works for ANY title, not just the ones
+        manually added to AWARDS_DB
+═══════════════════════════════════════════════════════ */
+
+async function fetchAndRenderAwards(tmdbId, type = "movie") {
+  if (awardsSection) awardsSection.style.display = "none";
+
+  try {
+    // Step 1: resolve IMDB ID from TMDB
+    const extRes = await fetch(`${BASE}/${type}/${tmdbId}/external_ids?api_key=${API_KEY}`)
+      .then(r => r.json()).catch(() => ({}));
+    const imdbId = extRes.imdb_id || "";
+
+    // Step 2: check static detailed DB first
+    const staticAwards = imdbId ? (AWARDS_DB[imdbId] || []) : [];
+
+    if (staticAwards.length > 0) {
+      renderAwardCards(staticAwards, imdbId);
+      return;
+    }
+
+    // Step 3: no static entry → fetch live from OMDb
+    if (!imdbId) { awardsSection.style.display = "none"; return; }
+
+    const omdbRes = await fetch(`https://www.omdbapi.com/?i=${imdbId}&apikey=${OMDB_KEY}`)
+      .then(r => r.json()).catch(() => null);
+
+    if (!omdbRes || omdbRes.Response === "False") {
+      awardsSection.style.display = "none";
+      return;
+    }
+
+    const parsed = parseOmdbAwards(omdbRes.Awards);
+
+    if (parsed.wins === 0 && parsed.noms === 0) {
+      awardsSection.style.display = "none";
+      return;
+    }
+
+    // Step 4: render using parsed OMDb data + summary bar from raw numbers
+    renderOmdbAwards(parsed, omdbRes);
+
+  } catch (err) {
+    console.error("Awards fetch error:", err);
+    if (awardsSection) awardsSection.style.display = "none";
+  }
+}
+
+/* ── Render detailed cards from static AWARDS_DB ── */
+function renderAwardCards(awards) {
+  if (!awardsSection) return;
+  awardsSection.style.display = "block";
+
+  const wins = awards.filter(a => a.result === "won").length;
+  const noms = awards.filter(a => a.result === "nominated").length;
+
+  awardsSummaryBar.innerHTML = buildSummaryBarHTML(wins, noms, wins + noms);
+
+  awardsGrid.innerHTML = awards.map((a, i) => `
+    <div class="award-card ${a.result === "won" ? "award-won" : "award-nom"}" style="animation-delay:${i * 0.06}s">
+      <div class="award-card-top">
+        <span class="award-icon">${a.icon}</span>
+        <span class="award-result-badge ${a.result === "won" ? "badge-won" : "badge-nom"}">
+          ${a.result === "won" ? "WON" : "NOMINATED"}
+        </span>
+      </div>
+      <div class="award-show">${a.show}</div>
+      <div class="award-category">${a.category}</div>
+      <div class="award-year">${a.year || ""}</div>
+    </div>
+  `).join("");
+}
+
+/* ── Render from live OMDb parsed data ── */
+function renderOmdbAwards(parsed, omdbData) {
+  if (!awardsSection) return;
+  awardsSection.style.display = "block";
+
+  const totalEntries = parsed.wins + parsed.noms;
+  awardsSummaryBar.innerHTML = buildSummaryBarHTML(parsed.wins, parsed.noms, totalEntries);
+
+  const cards = buildAwardCards(parsed);
+  awardsGrid.innerHTML = cards.map((a, i) => `
+    <div class="award-card ${a.result === "won" ? "award-won" : "award-nom"}" style="animation-delay:${i * 0.08}s">
+      <div class="award-card-top">
+        <span class="award-icon">${a.icon}</span>
+        <span class="award-result-badge ${a.result === "won" ? "badge-won" : "badge-nom"}">
+          ${a.result === "won" ? "WON" : "NOMINATED"}
+        </span>
+      </div>
+      <div class="award-show">${a.show}</div>
+      <div class="award-category">${a.category}</div>
+      ${a.year ? `<div class="award-year">${a.year}</div>` : ""}
+    </div>
+  `).join("");
+}
+
+/* ── Shared summary bar builder ── */
+function buildSummaryBarHTML(wins, noms, total) {
+  return `
+    <div class="award-summary-item">
+      <span class="award-summary-icon">🏆</span>
+      <span class="award-summary-val">${wins}</span>
+      <span class="award-summary-lbl">Win${wins !== 1 ? "s" : ""}</span>
+    </div>
+    <div class="award-summary-divider"></div>
+    <div class="award-summary-item">
+      <span class="award-summary-icon">🎖️</span>
+      <span class="award-summary-val">${noms}</span>
+      <span class="award-summary-lbl">Nomination${noms !== 1 ? "s" : ""}</span>
+    </div>
+    <div class="award-summary-divider"></div>
+    <div class="award-summary-item">
+      <span class="award-summary-icon">🎬</span>
+      <span class="award-summary-val">${total}</span>
+      <span class="award-summary-lbl">Total</span>
+    </div>
+  `;
+}
+
+
 /* ─────────────────────────────────────────────────────
    MOBILE FIXED SEARCH BAR
 ───────────────────────────────────────────────────── */
@@ -148,14 +802,14 @@ function setMode(mode) {
   const moviePh = "Search movies…";
   const tvPh    = "Search TV shows…";
 
-  searchInput.placeholder       = isTV ? tvPh : moviePh;
-  searchInputMobile.placeholder = isTV ? tvPh : moviePh;
+  searchInput.placeholder        = isTV ? tvPh : moviePh;
+  searchInputMobile.placeholder  = isTV ? tvPh : moviePh;
   searchInputLanding.placeholder = isTV
     ? "Try 'Breaking Bad', 'Game of Thrones', 'Succession'…"
     : "Try 'Inception', 'Avengers', 'The Dark Knight'…";
 
-  document.getElementById("landingIcon").textContent    = isTV ? "📺" : "🎬";
-  document.getElementById("landingTitle").textContent   = isTV ? "Discover Deep TV Show Analytics" : "Discover Deep Movie Analytics";
+  document.getElementById("landingIcon").textContent     = isTV ? "📺" : "🎬";
+  document.getElementById("landingTitle").textContent    = isTV ? "Discover Deep TV Show Analytics" : "Discover Deep Movie Analytics";
   document.getElementById("landingSubtitle").textContent = isTV
     ? "Seasons, episodes, networks, cast insights & popularity — all in one cinematic dashboard."
     : "Financial performance, cast insights, popularity trends, and more — all in one cinematic dashboard.";
@@ -284,6 +938,7 @@ async function loadMovie(id) {
       fetch(`${BASE}/movie/${id}/credits?api_key=${API_KEY}`).then(r => r.json()),
     ]);
     renderMovieDashboard(details, credits);
+    fetchAndRenderAwards(id, "movie");
   } catch (err) { console.error(err); }
   finally { loader.classList.add("hidden"); }
 }
@@ -304,6 +959,7 @@ async function loadShow(id) {
       fetch(`${BASE}/tv/${id}/credits?api_key=${API_KEY}`).then(r => r.json()),
     ]);
     renderShowDashboard(details, credits);
+    fetchAndRenderAwards(id, "tv");
   } catch (err) { console.error(err); }
   finally { loader.classList.add("hidden"); }
 }
@@ -360,6 +1016,7 @@ function renderMovieDashboard(d, credits) {
   seasonsSection.style.display = "none";
   epsPanel.style.display       = "none";
   chartTabs.style.display      = "flex";
+  if (awardsSection) awardsSection.style.display = "none";
 
   setupSidebarHero({
     posterPath: d.poster_path, backdropPath: d.backdrop_path,
@@ -440,6 +1097,7 @@ function renderShowDashboard(d, credits) {
   finPanel.style.display      = "none";
   revPanel.style.display      = "none";
   chartTabs.style.display     = "none";
+  if (awardsSection) awardsSection.style.display = "none";
 
   setupSidebarHero({
     posterPath: d.poster_path, backdropPath: d.backdrop_path,
