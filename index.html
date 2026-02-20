@@ -201,6 +201,196 @@
     .status-ended   { color: var(--red-lt)   !important; }
 
     /* ════════════════════════════════════════
+       🏆 AWARDS SECTION
+    ════════════════════════════════════════ */
+    #awardsSection {
+      padding: 0 1.5rem 2rem;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .awards-header {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 0.14em;
+      color: var(--gold);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .awards-header::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Summary bar — wins + nominations totals */
+    .awards-summary-bar {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 1.2rem;
+    }
+
+    .award-summary-item {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      padding: 0.85rem 1rem;
+    }
+
+    .award-summary-icon { font-size: 1.3rem; }
+
+    .award-summary-val {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 0.04em;
+      color: var(--gold-lt);
+      line-height: 1;
+    }
+
+    .award-summary-lbl {
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      align-self: flex-end;
+      padding-bottom: 4px;
+    }
+
+    .award-summary-divider {
+      width: 1px;
+      height: 40px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    /* Award cards grid */
+    .awards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .award-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.25s, transform 0.25s;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .award-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+
+    .award-won {
+      border-color: rgba(201,168,76,0.22);
+      background: linear-gradient(145deg, rgba(201,168,76,0.05) 0%, var(--surface) 60%);
+    }
+    .award-won::before {
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+    .award-won:hover {
+      border-color: rgba(201,168,76,0.5);
+      transform: translateY(-3px);
+    }
+    .award-won:hover::before { opacity: 1; }
+
+    .award-nom {
+      border-color: rgba(90,90,120,0.3);
+    }
+    .award-nom:hover {
+      border-color: rgba(90,90,140,0.6);
+      transform: translateY(-2px);
+    }
+
+    .award-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.2rem;
+    }
+
+    .award-icon { font-size: 1.4rem; }
+
+    .award-result-badge {
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      padding: 0.2rem 0.55rem;
+      border-radius: 99px;
+    }
+
+    .badge-won {
+      background: rgba(201,168,76,0.15);
+      border: 1px solid rgba(201,168,76,0.35);
+      color: var(--gold);
+    }
+
+    .badge-nom {
+      background: rgba(90,90,120,0.15);
+      border: 1px solid rgba(90,90,140,0.3);
+      color: var(--muted);
+    }
+
+    .award-show {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .award-category {
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .award-year {
+      font-size: 0.65rem;
+      color: var(--dim);
+      letter-spacing: 0.06em;
+      margin-top: 0.1rem;
+    }
+
+    /* ── Mobile awards responsive ── */
+    @media (max-width: 768px) {
+      #awardsSection { padding: 0 1rem 1.5rem; }
+      .awards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 0.55rem;
+      }
+      .award-summary-val { font-size: 1.6rem; }
+      .award-summary-icon { font-size: 1.1rem; }
+      .award-summary-item { padding: 0.65rem 0.75rem; gap: 0.4rem; }
+    }
+
+    @media (max-width: 480px) {
+      .awards-grid { grid-template-columns: 1fr 1fr; }
+      .award-card { padding: 0.8rem 0.9rem; }
+    }
+
+    /* ════════════════════════════════════════
        RESPONSIVE — TABLET (≤1024px)
     ════════════════════════════════════════ */
     @media (max-width: 1024px) {
@@ -247,14 +437,13 @@
         border-bottom: 1px solid var(--border);
       }
 
-      /* ── POSTER FIX: use natural aspect ratio, anchor to top ── */
       .sidebar-poster-wrap {
-        aspect-ratio: 2 / 3 !important;   /* restore natural poster ratio */
-        height: auto !important;           /* let aspect-ratio drive height */
-        max-height: 520px !important;      /* cap on very tall screens */
+        aspect-ratio: 2 / 3 !important;
+        height: auto !important;
+        max-height: 520px !important;
       }
       .sidebar-poster {
-        object-position: top center !important;  /* show the top of the poster */
+        object-position: top center !important;
       }
 
       .sidebar-overview {
@@ -357,7 +546,6 @@
 
       .show-stat-card .val { font-size: 1.05rem !important; }
 
-      /* Slightly smaller poster on small phones */
       .sidebar-poster-wrap {
         max-height: 420px !important;
       }
@@ -580,14 +768,24 @@
 
       </div>
 
+      <!-- KEY TALENT -->
       <div class="section-header">🎭 KEY TALENT</div>
       <div class="people-grid" id="peopleGrid"></div>
 
+      <!-- SEASONS -->
       <div class="seasons-table" id="seasonsSection" style="display:none">
         <div class="seasons-table-header">📋 SEASONS</div>
         <div class="seasons-grid" id="seasonsGrid"></div>
       </div>
 
+      <!-- ══ AWARDS SECTION ══ -->
+      <div id="awardsSection" style="display:none">
+        <div class="awards-header">🏆 AWARDS &amp; NOMINATIONS</div>
+        <div class="awards-summary-bar" id="awardsSummaryBar"></div>
+        <div class="awards-grid" id="awardsGrid"></div>
+      </div>
+
+      <!-- META -->
       <div class="meta-duo" id="metaDuo" style="display:none">
         <div class="meta-card">
           <div class="meta-card-title">🌍 COUNTRIES OF ORIGIN</div>
