@@ -3,568 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Entertainment — Movie &amp; TV Dashboard</title>
+  <title>Entertainment — Movie, TV &amp; Game Dashboard</title>
   <link rel="stylesheet" href="static/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-
-  <style>
-    /* ════════════════════════════════════════
-       INDEX PAGE — OVERRIDES & ADDITIONS
-    ════════════════════════════════════════ */
-
-    /* ── BACK TO HOME — DESKTOP ── */
-    .back-home-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      background: transparent;
-      border: 1px solid var(--border-2);
-      color: var(--muted);
-      text-decoration: none;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.76rem;
-      font-weight: 500;
-      letter-spacing: 0.06em;
-      padding: 0.45rem 1rem;
-      border-radius: 99px;
-      flex-shrink: 0;
-      transition: border-color 0.2s, color 0.2s, background 0.2s;
-      white-space: nowrap;
-    }
-    .back-home-btn:hover {
-      border-color: rgba(201,168,76,0.4);
-      color: var(--gold-lt);
-      background: rgba(201,168,76,0.06);
-    }
-    .back-home-btn svg { flex-shrink: 0; transition: transform 0.2s; }
-    .back-home-btn:hover svg { transform: translateX(-2px); }
-
-    @media (max-width: 768px) {
-      .back-home-desktop { display: none !important; }
-    }
-
-    /* ── BACK TO HOME — MOBILE ── */
-    .back-home-mobile {
-      display: none;
-      align-items: center;
-      gap: 0.45rem;
-      color: var(--muted);
-      text-decoration: none;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.78rem;
-      font-weight: 500;
-      letter-spacing: 0.05em;
-      padding: 0.3rem 0;
-      margin-bottom: 0.5rem;
-      transition: color 0.2s;
-      width: fit-content;
-    }
-    .back-home-mobile svg { flex-shrink: 0; transition: transform 0.2s; }
-    .back-home-mobile:hover { color: var(--gold-lt); }
-    .back-home-mobile:hover svg { transform: translateX(-3px); }
-
-    @media (max-width: 768px) {
-      .back-home-mobile { display: flex !important; }
-    }
-
-    /* ── MODE TOGGLE ── */
-    .mode-toggle {
-      display: flex;
-      align-items: center;
-      background: var(--surface2);
-      border: 1px solid var(--border-2);
-      border-radius: 99px;
-      padding: 3px;
-      gap: 2px;
-      flex-shrink: 0;
-    }
-    .mode-btn {
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.78rem;
-      font-weight: 500;
-      padding: 0.35rem 0.9rem;
-      border-radius: 99px;
-      cursor: pointer;
-      transition: all 0.2s;
-      letter-spacing: 0.03em;
-      white-space: nowrap;
-    }
-    .mode-btn.active {
-      background: rgba(201,168,76,0.15);
-      color: var(--gold);
-      border: 1px solid rgba(201,168,76,0.3);
-    }
-    .mode-btn:hover:not(.active) { color: var(--text); }
-
-    /* ── MOBILE STICKY SEARCH BAR ── */
-    .mobile-search-row {
-      display: none;
-      position: fixed;
-      top: var(--header-h);
-      left: 0; right: 0;
-      z-index: 199;
-      background: rgba(7,8,13,0.97);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-      padding: 0.6rem 1rem;
-    }
-    .mobile-search-row .search-box {
-      width: 100%;
-      border-radius: 12px;
-    }
-    .mobile-search-row .search-box input {
-      padding: 0.7rem 0;
-      font-size: 0.95rem;
-    }
-    #mobileSearchSuggestions {
-      position: absolute;
-      top: calc(100% + 4px);
-      left: 1rem; right: 1rem;
-      z-index: 500;
-    }
-
-    /* ── SHOW-SPECIFIC STATS BAND ── */
-    .show-stat-band {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
-      gap: 0.6rem;
-      padding: 1.2rem 1.5rem 0;
-    }
-    .show-stat-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 0.75rem 0.9rem;
-      text-align: center;
-    }
-    .show-stat-card .lbl {
-      font-size: 0.6rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--muted);
-      margin-bottom: 0.35rem;
-    }
-    .show-stat-card .val {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.3rem;
-      color: var(--gold-lt);
-      letter-spacing: 0.04em;
-      line-height: 1;
-    }
-
-    /* ── SEASONS ── */
-    .seasons-table { padding: 0 1.5rem 1.5rem; }
-    .seasons-table-header {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.2rem;
-      letter-spacing: 0.14em;
-      color: var(--gold);
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .seasons-table-header::after { content:''; flex:1; height:1px; background:var(--border); }
-    .seasons-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 0.6rem;
-    }
-    .season-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-      transition: border-color 0.2s, transform 0.2s;
-      animation: fadeUp 0.3s ease both;
-    }
-    .season-card:hover { border-color: rgba(201,168,76,0.3); transform: translateY(-2px); }
-    .season-card img { width:100%; aspect-ratio:2/3; object-fit:cover; display:block; }
-    .season-card-no-img {
-      width:100%; aspect-ratio:2/3; background:var(--surface2);
-      display:flex; align-items:center; justify-content:center; font-size:2rem;
-    }
-    .season-card-body { padding: 0.55rem 0.7rem; }
-    .season-card-name { font-size:0.75rem; font-weight:600; color:var(--text); margin-bottom:0.15rem; }
-    .season-card-eps  { font-size:0.65rem; color:var(--muted); }
-
-    #epsPanel { display: none; }
-    .status-ongoing { color: var(--green-lt) !important; }
-    .status-ended   { color: var(--red-lt)   !important; }
-
-    /* ════════════════════════════════════════
-       🏆 AWARDS SECTION
-    ════════════════════════════════════════ */
-    #awardsSection {
-      padding: 0 1.5rem 2rem;
-      animation: fadeUp 0.5s ease both;
-    }
-
-    .awards-header {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.2rem;
-      letter-spacing: 0.14em;
-      color: var(--gold);
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .awards-header::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    /* Summary bar — wins + nominations totals */
-    .awards-summary-bar {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
-      margin-bottom: 1.2rem;
-    }
-
-    .award-summary-item {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.55rem;
-      padding: 0.85rem 1rem;
-    }
-
-    .award-summary-icon { font-size: 1.3rem; }
-
-    .award-summary-val {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 2rem;
-      letter-spacing: 0.04em;
-      color: var(--gold-lt);
-      line-height: 1;
-    }
-
-    .award-summary-lbl {
-      font-size: 0.62rem;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: var(--muted);
-      align-self: flex-end;
-      padding-bottom: 4px;
-    }
-
-    .award-summary-divider {
-      width: 1px;
-      height: 40px;
-      background: var(--border);
-      flex-shrink: 0;
-    }
-
-    /* Award cards grid */
-    .awards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 0.75rem;
-    }
-
-    .award-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1rem 1.1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-      position: relative;
-      overflow: hidden;
-      transition: border-color 0.25s, transform 0.25s;
-      animation: fadeUp 0.4s ease both;
-    }
-
-    .award-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      opacity: 0;
-      transition: opacity 0.25s;
-    }
-
-    .award-won {
-      border-color: rgba(201,168,76,0.22);
-      background: linear-gradient(145deg, rgba(201,168,76,0.05) 0%, var(--surface) 60%);
-    }
-    .award-won::before {
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    }
-    .award-won:hover {
-      border-color: rgba(201,168,76,0.5);
-      transform: translateY(-3px);
-    }
-    .award-won:hover::before { opacity: 1; }
-
-    .award-nom {
-      border-color: rgba(90,90,120,0.3);
-    }
-    .award-nom:hover {
-      border-color: rgba(90,90,140,0.6);
-      transform: translateY(-2px);
-    }
-
-    .award-card-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 0.2rem;
-    }
-
-    .award-icon { font-size: 1.4rem; }
-
-    .award-result-badge {
-      font-size: 0.6rem;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      padding: 0.2rem 0.55rem;
-      border-radius: 99px;
-    }
-
-    .badge-won {
-      background: rgba(201,168,76,0.15);
-      border: 1px solid rgba(201,168,76,0.35);
-      color: var(--gold);
-    }
-
-    .badge-nom {
-      background: rgba(90,90,120,0.15);
-      border: 1px solid rgba(90,90,140,0.3);
-      color: var(--muted);
-    }
-
-    .award-show {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 0.9rem;
-      letter-spacing: 0.1em;
-      color: var(--text);
-      line-height: 1.2;
-    }
-
-    .award-category {
-      font-size: 0.75rem;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
-    .award-year {
-      font-size: 0.65rem;
-      color: var(--dim);
-      letter-spacing: 0.06em;
-      margin-top: 0.1rem;
-    }
-
-    /* ── Mobile awards responsive ── */
-    @media (max-width: 768px) {
-      #awardsSection { padding: 0 1rem 1.5rem; }
-      .awards-grid {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 0.55rem;
-      }
-      .award-summary-val { font-size: 1.6rem; }
-      .award-summary-icon { font-size: 1.1rem; }
-      .award-summary-item { padding: 0.65rem 0.75rem; gap: 0.4rem; }
-    }
-
-    @media (max-width: 480px) {
-      .awards-grid { grid-template-columns: 1fr 1fr; }
-      .award-card { padding: 0.8rem 0.9rem; }
-    }
-
-    /* ════════════════════════════════════════
-       RESPONSIVE — TABLET (≤1024px)
-    ════════════════════════════════════════ */
-    @media (max-width: 1024px) {
-      :root { --sidebar-w: 260px; }
-      .charts-master-grid { grid-template-columns: 1fr 1fr; }
-      .meta-duo { grid-template-columns: 1fr 1fr; }
-    }
-
-    /* ════════════════════════════════════════
-       RESPONSIVE — MOBILE (≤768px)
-    ════════════════════════════════════════ */
-    @media (max-width: 768px) {
-      :root {
-        --header-h:        54px;
-        --mobile-search-h: 90px;
-      }
-
-      .header-inner {
-        padding: 0 1rem !important;
-        gap: 0.5rem !important;
-        justify-content: space-between !important;
-      }
-      .header-sub { display: none !important; }
-      #headerSearch { display: none !important; }
-
-      .mobile-search-row { display: block !important; }
-
-      .landing-screen {
-        padding-top: calc(var(--header-h) + var(--mobile-search-h) + 1.5rem) !important;
-      }
-      .app-layout {
-        padding-top: calc(var(--header-h) + var(--mobile-search-h)) !important;
-        grid-template-columns: 1fr !important;
-      }
-
-      .mode-toggle { padding: 2px; }
-      .mode-btn { font-size: 0.68rem; padding: 0.28rem 0.6rem; }
-
-      .sidebar {
-        position: static !important;
-        height: auto !important;
-        overflow: visible !important;
-        border-right: none !important;
-        border-bottom: 1px solid var(--border);
-      }
-
-      .sidebar-poster-wrap {
-        aspect-ratio: 2 / 3 !important;
-        height: auto !important;
-        max-height: 520px !important;
-      }
-      .sidebar-poster {
-        object-position: top center !important;
-      }
-
-      .sidebar-overview {
-        -webkit-line-clamp: 4 !important;
-      }
-
-      .hero-backdrop { height: 180px !important; }
-      .hero-top-bar {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 0.35rem !important;
-        padding: 0.85rem 1rem !important;
-      }
-      .hero-title { font-size: 1.5rem !important; }
-      .hero-fin-quick { display: none !important; }
-
-      .stat-ribbon-item {
-        min-width: 95px !important;
-        padding: 0.65rem 0.75rem !important;
-      }
-      .stat-rib-value  { font-size: 1.1rem !important; }
-      .stat-rib-label  { font-size: 0.55rem !important; }
-      .stat-rib-sub    { font-size: 0.6rem  !important; }
-
-      .show-stat-band {
-        grid-template-columns: repeat(2, 1fr) !important;
-        padding: 0.75rem 1rem 0 !important;
-      }
-
-      .profit-bar-wrap {
-        margin: 0.85rem 1rem !important;
-        padding: 0.95rem 1.1rem !important;
-      }
-      .profit-pill-row { flex-wrap: wrap !important; gap: 0.45rem !important; }
-      .profit-pill { font-size: 0.68rem !important; padding: 0.3rem 0.65rem !important; }
-
-      .charts-master-grid {
-        grid-template-columns: 1fr !important;
-        padding: 0.85rem !important;
-        gap: 0.65rem !important;
-      }
-      .chart-panel.span-2 { grid-column: 1 !important; }
-      .chart-wrap { height: 210px !important; }
-
-      .people-grid {
-        grid-template-columns: repeat(3, 1fr) !important;
-        padding: 0 1rem !important;
-        gap: 0.55rem !important;
-      }
-      .person-name { font-size: 0.66rem !important; }
-      .person-role { font-size: 0.58rem !important; }
-
-      .section-header { padding: 0 1rem !important; }
-
-      .seasons-table { padding: 0 1rem 1.2rem !important; }
-      .seasons-grid {
-        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)) !important;
-        gap: 0.5rem !important;
-      }
-
-      .meta-duo {
-        grid-template-columns: 1fr !important;
-        padding: 0 1rem 1.5rem !important;
-        gap: 0.65rem !important;
-      }
-
-      .landing-title h2  { font-size: clamp(2rem, 8vw, 3.5rem) !important; }
-      .landing-title p   { font-size: 0.88rem !important; }
-      .landing-icon      { font-size: 2.8rem !important; margin-bottom: 0.9rem !important; }
-      .landing-search-box input { font-size: 0.95rem !important; }
-
-      .sidebar-title { font-size: 1.45rem !important; }
-      .sidebar-stat-row { gap: 0.4rem !important; }
-    }
-
-    /* ════════════════════════════════════════
-       RESPONSIVE — SMALL MOBILE (≤480px)
-    ════════════════════════════════════════ */
-    @media (max-width: 480px) {
-      .header-brand h1 { font-size: 1.4rem; }
-      .mode-btn { padding: 0.25rem 0.45rem; font-size: 0.62rem; }
-
-      .chart-panel-title {
-        font-size: 0.85rem !important;
-        letter-spacing: 0.1em !important;
-      }
-
-      .people-grid {
-        grid-template-columns: repeat(3, 1fr) !important;
-        gap: 0.45rem !important;
-      }
-
-      .sidebar-stat-row { grid-template-columns: repeat(3, 1fr) !important; }
-
-      .hero-title { font-size: 1.4rem !important; }
-      .hero-backdrop { height: 155px !important; }
-
-      .profit-pill-row { gap: 0.35rem !important; }
-      .profit-pill { font-size: 0.65rem !important; }
-
-      .show-stat-card .val { font-size: 1.05rem !important; }
-
-      .sidebar-poster-wrap {
-        max-height: 420px !important;
-      }
-    }
-
-    /* ════════════════════════════════════════
-       RESPONSIVE — VERY SMALL (≤360px)
-    ════════════════════════════════════════ */
-    @media (max-width: 360px) {
-      .people-grid { grid-template-columns: repeat(2, 1fr) !important; }
-      .header-brand h1 { font-size: 1.25rem; }
-      .mode-btn { font-size: 0.58rem; padding: 0.22rem 0.4rem; }
-      .show-stat-band { grid-template-columns: 1fr 1fr !important; }
-
-      .sidebar-poster-wrap {
-        max-height: 380px !important;
-      }
-    }
-  </style>
 </head>
 <body>
 
@@ -576,19 +21,21 @@
     <div class="header-inner">
       <div class="header-brand">
         <h1>ENTERTAINMENT</h1>
-        <p class="header-sub">Real-Time Movie &amp; TV Intelligence</p>
+        <p class="header-sub">Movie, TV &amp; Game Intelligence</p>
       </div>
 
       <a href="/" class="back-home-btn back-home-desktop" title="Back to Home">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
           <path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span class="back-home-label">Home</span>
+        <span>Home</span>
       </a>
 
+      <!-- Desktop mode toggle -->
       <div class="mode-toggle" id="modeToggle">
         <button class="mode-btn active" data-mode="movie">🎬 Movies</button>
         <button class="mode-btn" data-mode="tv">📺 TV Shows</button>
+        <button class="mode-btn" data-mode="game">🎮 Games</button>
       </div>
 
       <div class="search-wrap" id="headerSearch">
@@ -610,11 +57,22 @@
       </svg>
       Back to Home
     </a>
-    <div class="search-box">
-      <span class="search-icon">⌕</span>
-      <input type="text" id="searchInputMobile" placeholder="Search movies or shows…" autocomplete="off" />
+
+    <!-- Search input -->
+    <div style="position:relative;">
+      <div class="search-box">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="searchInputMobile" placeholder="Search movies or shows…" autocomplete="off" />
+      </div>
+      <ul id="mobileSearchSuggestions" class="suggestions hidden"></ul>
     </div>
-    <ul id="mobileSearchSuggestions" class="suggestions hidden"></ul>
+
+    <!-- Mobile mode toggle BELOW search -->
+    <div class="mobile-mode-toggle" id="mobileModeToggle">
+      <button class="mode-btn active" data-mode="movie">🎬 Movies</button>
+      <button class="mode-btn" data-mode="tv">📺 TV</button>
+      <button class="mode-btn" data-mode="game">🎮 Games</button>
+    </div>
   </div>
 
   <!-- LANDING -->
@@ -625,6 +83,14 @@
         <h2 id="landingTitle">Discover Deep Movie Analytics</h2>
         <p id="landingSubtitle">Financial performance, cast insights, popularity trends, and more — all in one cinematic dashboard.</p>
       </div>
+
+      <!-- Landing mode pills -->
+      <div class="landing-mode-pills">
+        <button class="landing-mode-pill active" data-mode="movie">🎬 Movies</button>
+        <button class="landing-mode-pill" data-mode="tv">📺 TV Shows</button>
+        <button class="landing-mode-pill" data-mode="game">🎮 Games</button>
+      </div>
+
       <div class="landing-search-wrap">
         <div class="search-box landing-search-box">
           <span class="search-icon">⌕</span>
@@ -651,12 +117,11 @@
         <div class="sidebar-poster-overlay"></div>
       </div>
       <div class="sidebar-meta">
-        <div class="sidebar-title"  id="sidebarTitle"></div>
-        <div class="sidebar-year"   id="sidebarYear"></div>
-        <div class="sidebar-badges" id="sidebarBadges"></div>
+        <div class="sidebar-title"   id="sidebarTitle"></div>
+        <div class="sidebar-year"    id="sidebarYear"></div>
+        <div class="sidebar-badges"  id="sidebarBadges"></div>
         <div class="sidebar-tagline" id="sidebarTagline"></div>
         <div class="sidebar-overview" id="sidebarOverview"></div>
-
         <div class="sidebar-stat-row">
           <div class="sidebar-stat">
             <div class="sidebar-stat-lbl">Rating</div>
@@ -671,7 +136,6 @@
             <div class="sidebar-stat-val" id="sidebarStatus">—</div>
           </div>
         </div>
-
         <div class="sidebar-score-wrap" id="sidebarScoreWrap">
           <div class="score-ring-wrap">
             <svg class="score-ring" viewBox="0 0 60 60">
@@ -692,17 +156,19 @@
         <div class="hero-backdrop-fade"></div>
         <div class="hero-top-bar">
           <div class="hero-title-block">
-            <div class="hero-title"      id="heroTitle"></div>
-            <div class="hero-badges-bar" id="heroBadges"></div>
+            <div class="hero-title"       id="heroTitle"></div>
+            <div class="hero-badges-bar"  id="heroBadges"></div>
           </div>
-          <div class="hero-fin-quick" id="heroFinQuick"></div>
+          <div class="hero-fin-quick"     id="heroFinQuick"></div>
         </div>
       </div>
 
       <div class="stat-ribbon" id="statRibbon"></div>
 
+      <!-- Show/Game stat band -->
       <div id="showStatBand" class="show-stat-band" style="display:none"></div>
 
+      <!-- Movie profit bar -->
       <div class="profit-bar-wrap" id="profitBarWrap" style="display:none">
         <div class="profit-bar-header">
           <div class="profit-bar-title">BOX OFFICE PERFORMANCE</div>
@@ -718,6 +184,7 @@
         <div class="profit-pill-row" id="profitPills"></div>
       </div>
 
+      <!-- Charts grid -->
       <div class="charts-master-grid">
 
         <div class="chart-panel span-2" id="revPanel" style="display:none">
@@ -735,7 +202,7 @@
           <p class="chart-note" id="chartNote"></p>
         </div>
 
-        <div class="chart-panel span-2" id="epsPanel">
+        <div class="chart-panel span-2" id="epsPanel" style="display:none">
           <div class="chart-panel-header">
             <div class="chart-panel-title">📺 EPISODES PER SEASON</div>
           </div>
@@ -772,13 +239,41 @@
       <div class="section-header">🎭 KEY TALENT</div>
       <div class="people-grid" id="peopleGrid"></div>
 
-      <!-- SEASONS -->
+      <!-- ══ GAME: SCREENSHOTS ══ -->
+      <div id="screenshotsSection" style="display:none">
+        <div class="screenshots-header">📸 SCREENSHOTS</div>
+        <div class="screenshots-grid" id="screenshotsGrid"></div>
+      </div>
+
+      <!-- ══ GAME: RATINGS BREAKDOWN ══ -->
+      <div id="gameRatingsPanel" style="display:none">
+        <div class="game-ratings-header">⭐ RATINGS BREAKDOWN</div>
+        <div class="game-ratings-chart-wrap">
+          <canvas id="gameRatingsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- ══ GAME: QUICK STATS ══ -->
+      <div id="gameStatsPanel" style="display:none">
+        <div class="game-stats-header">📊 GAME STATS</div>
+        <div class="game-stats-list" id="gameStatsList"></div>
+      </div>
+
+      <!-- ══ PLATFORMS PANEL ══ -->
+      <div class="chart-panel" id="platformsPanel" style="display:none;margin:0 1.5rem 1rem;">
+        <div class="chart-panel-header">
+          <div class="chart-panel-title">🖥️ PLATFORMS</div>
+        </div>
+        <div class="prod-list" id="platformsList"></div>
+      </div>
+
+      <!-- SEASONS (TV) -->
       <div class="seasons-table" id="seasonsSection" style="display:none">
         <div class="seasons-table-header">📋 SEASONS</div>
         <div class="seasons-grid" id="seasonsGrid"></div>
       </div>
 
-      <!-- ══ AWARDS SECTION ══ -->
+      <!-- AWARDS -->
       <div id="awardsSection" style="display:none">
         <div class="awards-header">🏆 AWARDS &amp; NOMINATIONS</div>
         <div class="awards-summary-bar" id="awardsSummaryBar"></div>
@@ -788,11 +283,11 @@
       <!-- META -->
       <div class="meta-duo" id="metaDuo" style="display:none">
         <div class="meta-card">
-          <div class="meta-card-title">🌍 COUNTRIES OF ORIGIN</div>
+          <div class="meta-card-title" id="countriesMetaTitle">🌍 COUNTRIES OF ORIGIN</div>
           <div class="meta-card-body" id="countriesList"></div>
         </div>
         <div class="meta-card">
-          <div class="meta-card-title">🗣️ SPOKEN LANGUAGES</div>
+          <div class="meta-card-title" id="languagesMetaTitle">🗣️ SPOKEN LANGUAGES</div>
           <div class="meta-card-body" id="languagesList"></div>
         </div>
         <div class="meta-card">
@@ -807,11 +302,54 @@
   <div id="loader" class="loader hidden">
     <div class="loader-inner">
       <div class="film-spinner"><div class="film-reel"></div></div>
-      <div class="loader-text" id="loaderText">Analyzing movie data…</div>
-      <div class="loader-sub"  id="loaderSub">Fetching box office, cast &amp; financials</div>
+      <div class="loader-text" id="loaderText">Analyzing data…</div>
+      <div class="loader-sub"  id="loaderSub">Fetching details</div>
     </div>
   </div>
 
   <script src="static/script.js"></script>
+
+  <script>
+    // ── SYNC LANDING MODE PILLS with the header toggle ──
+    document.querySelectorAll(".landing-mode-pill").forEach(pill => {
+      pill.addEventListener("click", () => {
+        const mode = pill.dataset.mode;
+        // Update landing pills
+        document.querySelectorAll(".landing-mode-pill").forEach(p =>
+          p.classList.toggle("active", p.dataset.mode === mode)
+        );
+        // Sync desktop header toggle
+        document.querySelectorAll("#modeToggle .mode-btn").forEach(b =>
+          b.classList.toggle("active", b.dataset.mode === mode)
+        );
+        // Sync mobile toggle
+        document.querySelectorAll("#mobileModeToggle .mode-btn").forEach(b =>
+          b.classList.toggle("active", b.dataset.mode === mode)
+        );
+        // Trigger mode change
+        setMode(mode);
+      });
+    });
+
+    // ── SYNC MOBILE MODE TOGGLE ──
+    document.querySelectorAll("#mobileModeToggle .mode-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const mode = btn.dataset.mode;
+        // Update mobile toggle
+        document.querySelectorAll("#mobileModeToggle .mode-btn").forEach(b =>
+          b.classList.toggle("active", b.dataset.mode === mode)
+        );
+        // Sync desktop toggle
+        document.querySelectorAll("#modeToggle .mode-btn").forEach(b =>
+          b.classList.toggle("active", b.dataset.mode === mode)
+        );
+        // Sync landing pills
+        document.querySelectorAll(".landing-mode-pill").forEach(p =>
+          p.classList.toggle("active", p.dataset.mode === mode)
+        );
+        setMode(mode);
+      });
+    });
+  </script>
 </body>
 </html>
