@@ -58,7 +58,6 @@
       Back to Home
     </a>
 
-    <!-- Search input -->
     <div style="position:relative;">
       <div class="search-box">
         <span class="search-icon">⌕</span>
@@ -67,7 +66,6 @@
       <ul id="mobileSearchSuggestions" class="suggestions hidden"></ul>
     </div>
 
-    <!-- Mobile mode toggle BELOW search -->
     <div class="mobile-mode-toggle" id="mobileModeToggle">
       <button class="mode-btn active" data-mode="movie">🎬 Movies</button>
       <button class="mode-btn" data-mode="tv">📺 TV</button>
@@ -84,7 +82,6 @@
         <p id="landingSubtitle">Financial performance, cast insights, popularity trends, and more — all in one cinematic dashboard.</p>
       </div>
 
-      <!-- Landing mode pills -->
       <div class="landing-mode-pills">
         <button class="landing-mode-pill active" data-mode="movie">🎬 Movies</button>
         <button class="landing-mode-pill" data-mode="tv">📺 TV Shows</button>
@@ -259,6 +256,12 @@
         <div class="game-stats-list" id="gameStatsList"></div>
       </div>
 
+      <!-- ══ GAME: RELATED GAMES (NEW — shown before platforms) ══ -->
+      <div id="relatedGamesSection" style="display:none">
+        <div class="related-games-header">🎮 MORE IN THIS SERIES</div>
+        <div class="related-games-grid" id="relatedGamesGrid"></div>
+      </div>
+
       <!-- ══ PLATFORMS PANEL ══ -->
       <div class="chart-panel" id="platformsPanel" style="display:none;margin:0 1.5rem 1rem;">
         <div class="chart-panel-header">
@@ -314,19 +317,15 @@
     document.querySelectorAll(".landing-mode-pill").forEach(pill => {
       pill.addEventListener("click", () => {
         const mode = pill.dataset.mode;
-        // Update landing pills
         document.querySelectorAll(".landing-mode-pill").forEach(p =>
           p.classList.toggle("active", p.dataset.mode === mode)
         );
-        // Sync desktop header toggle
         document.querySelectorAll("#modeToggle .mode-btn").forEach(b =>
           b.classList.toggle("active", b.dataset.mode === mode)
         );
-        // Sync mobile toggle
         document.querySelectorAll("#mobileModeToggle .mode-btn").forEach(b =>
           b.classList.toggle("active", b.dataset.mode === mode)
         );
-        // Trigger mode change
         setMode(mode);
       });
     });
@@ -335,15 +334,12 @@
     document.querySelectorAll("#mobileModeToggle .mode-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         const mode = btn.dataset.mode;
-        // Update mobile toggle
         document.querySelectorAll("#mobileModeToggle .mode-btn").forEach(b =>
           b.classList.toggle("active", b.dataset.mode === mode)
         );
-        // Sync desktop toggle
         document.querySelectorAll("#modeToggle .mode-btn").forEach(b =>
           b.classList.toggle("active", b.dataset.mode === mode)
         );
-        // Sync landing pills
         document.querySelectorAll(".landing-mode-pill").forEach(p =>
           p.classList.toggle("active", p.dataset.mode === mode)
         );
