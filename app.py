@@ -16,7 +16,6 @@ def landing():
 def dashboard():
     return send_from_directory(".", "index.html")
 
-
 # Serve CSS
 @app.route("/style.css")
 def serve_css():
