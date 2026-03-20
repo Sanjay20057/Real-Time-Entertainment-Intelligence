@@ -76,6 +76,7 @@ const gameStatsPanel     = document.getElementById("gameStatsPanel");
 const gameStatsGrid      = document.getElementById("gameStatsGrid");
 const gameRatingsPanel   = document.getElementById("gameRatingsPanel");
 const platformsPanel     = document.getElementById("platformsPanel");
+const relatedGamesSection = document.getElementById("relatedGamesSection");
 
 let cumulativeChart  = null;
 let periodChart      = null;
@@ -160,554 +161,22 @@ const AWARDS_DB = {
 };
 
 /* ═══════════════════════════════════════════════════════
-   🎮 GAME AWARDS DATABASE  (keyed by RAWG slug)
+   🎮 GAME AWARDS DATABASE
 ═══════════════════════════════════════════════════════ */
 const GAME_AWARDS_DB = {
-  /* ── Astro Bot ── */
-  "astro-bot": [
-    { show:"The Game Awards",    year:2024, category:"Game of the Year",           result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2024, category:"Best Game Direction",         result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2024, category:"Best Family Game",            result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2024, category:"Best Action/Adventure Game",  result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2024, category:"Innovation in Accessibility", result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2025, category:"Best Game",                   result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2025, category:"Best Family",                 result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2025, category:"Best Artistic Achievement",   result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2024, category:"Ultimate Game of the Year",   result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2024, category:"Best Visual Design",          result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2024, category:"Best Family Game",            result:"won",       icon:"🏆" },
-    { show:"DICE Awards",        year:2025, category:"Game of the Year",            result:"nominated", icon:"🎖️" },
-    { show:"DICE Awards",        year:2025, category:"Family Game of the Year",     result:"won",       icon:"🏆" },
-    { show:"IGN Best of 2024",   year:2024, category:"Game of the Year",            result:"won",       icon:"🏆" },
-    { show:"IGN Best of 2024",   year:2024, category:"Best Platformer",             result:"won",       icon:"🏆" },
-  ],
-  /* ── Elden Ring ── */
-  "elden-ring": [
-    { show:"The Game Awards",    year:2022, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2022, category:"Best Game Direction",                      result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2022, category:"Best RPG",                                 result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2022, category:"Best Art Direction",                       result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2023, category:"Best Game",                                result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2023, category:"Best Artistic Achievement",                result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2022, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2022, category:"Best Visual Design",                       result:"won",       icon:"🏆" },
-    { show:"DICE Awards",        year:2023, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"DICE Awards",        year:2023, category:"Role-Playing Game of the Year",            result:"won",       icon:"🏆" },
-    { show:"IGN Best of 2022",   year:2022, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-  ],
-  /* ── Elden Ring: Shadow of the Erdtree ── */
-  "elden-ring-shadow-of-the-erdtree": [
-    { show:"The Game Awards",    year:2024, category:"Best RPG",                                 result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2024, category:"Best Game Expansion",                      result:"won",       icon:"🏆" },
-  ],
-  /* ── Red Dead Redemption 2 ── */
-  "red-dead-redemption-2": [
-    { show:"The Game Awards",    year:2018, category:"Best Narrative",                           result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2018, category:"Best Score/Music",                         result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2018, category:"Best Performance – Roger Clark",           result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2018, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2019, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2019, category:"Best Narrative",                           result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2018, category:"Best Storytelling",                        result:"won",       icon:"🏆" },
-    { show:"DICE Awards",        year:2019, category:"Outstanding Achievement in Story",         result:"won",       icon:"🏆" },
-  ],
-  /* ── The Witcher 3 ── */
-  "the-witcher-3-wild-hunt": [
-    { show:"The Game Awards",    year:2015, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2015, category:"Best RPG",                                 result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2015, category:"Best Narrative",                           result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2015, category:"Ultimate Game of the Year",                result:"won",       icon:"🏆" },
-    { show:"DICE Awards",        year:2016, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-    { show:"DICE Awards",        year:2016, category:"RPG of the Year",                          result:"won",       icon:"🏆" },
-    { show:"GDC Awards",         year:2016, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-  ],
-  /* ── God of War (2018) ── */
-  "god-of-war": [
-    { show:"The Game Awards",    year:2018, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2018, category:"Best Game Direction",                      result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2018, category:"Best Audio Design",                        result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2018, category:"Best Action/Adventure Game",               result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2019, category:"Best Game",                                result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2019, category:"Best Narrative",                           result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2018, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-    { show:"DICE Awards",        year:2019, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-  ],
-  /* ── God of War Ragnarök ── */
-  "god-of-war-ragnarok": [
-    { show:"The Game Awards",    year:2022, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2022, category:"Best Narrative",                           result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2022, category:"Best Performance – Christopher Judge",     result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2022, category:"Best Action/Adventure",                    result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2023, category:"Best Game",                                result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2023, category:"Best Narrative",                           result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2022, category:"Best Storytelling",                        result:"won",       icon:"🏆" },
-    { show:"DICE Awards",        year:2023, category:"Outstanding Achievement in Story",         result:"won",       icon:"🏆" },
-  ],
-  /* ── The Last of Us ── */
-  "the-last-of-us": [
-    { show:"The Game Awards",    year:2013, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2013, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2014, category:"Best Game",                                result:"won",       icon:"🏆" },
-    { show:"DICE Awards",        year:2014, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-  ],
-  /* ── The Last of Us Part II ── */
-  "the-last-of-us-part-ii": [
-    { show:"The Game Awards",    year:2020, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2020, category:"Best Game Direction",                      result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2020, category:"Best Narrative",                           result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2020, category:"Best Performance – Laura Bailey",          result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2020, category:"Best Audio Design",                        result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2020, category:"Best Action/Adventure",                    result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2021, category:"Best Game",                                result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2020, category:"Ultimate Game of the Year",                result:"won",       icon:"🏆" },
-    { show:"DICE Awards",        year:2021, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-  ],
-  /* ── Cyberpunk 2077 ── */
-  "cyberpunk-2077": [
-    { show:"Golden Joystick",    year:2020, category:"Most Wanted",                              result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2020, category:"Most Anticipated Game",                    result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2023, category:"Best RPG (Phantom Liberty)",               result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2021, category:"Best Narrative",                           result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Hades ── */
-  "hades": [
-    { show:"The Game Awards",    year:2020, category:"Best Independent Game",                    result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2020, category:"Best Action Game",                         result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2020, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2021, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2020, category:"Best Indie Game",                          result:"won",       icon:"🏆" },
-    { show:"DICE Awards",        year:2021, category:"Outstanding Achievement in Game Design",   result:"won",       icon:"🏆" },
-  ],
-  /* ── Hades II ── */
-  "hades-ii": [
-    { show:"The Game Awards",    year:2024, category:"Best Independent Game",                    result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2024, category:"Best Early Access Game",                   result:"won",       icon:"🏆" },
-  ],
-  /* ── Baldur's Gate 3 ── */
-  "baldurs-gate-3": [
-    { show:"The Game Awards",    year:2023, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2023, category:"Best Game Direction",                      result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2023, category:"Best Narrative",                           result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2023, category:"Best RPG",                                 result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2023, category:"Best Performance – Neil Newbon",           result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2024, category:"Best Game",                                result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2024, category:"Best Narrative",                           result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2024, category:"Best Performer – Neil Newbon",             result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2023, category:"Ultimate Game of the Year",                result:"won",       icon:"🏆" },
-    { show:"DICE Awards",        year:2024, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-    { show:"DICE Awards",        year:2024, category:"Role-Playing Game of the Year",            result:"won",       icon:"🏆" },
-    { show:"GDC Awards",         year:2024, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-  ],
-  /* ── Zelda: Breath of the Wild ── */
-  "the-legend-of-zelda-breath-of-the-wild": [
-    { show:"The Game Awards",    year:2017, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2017, category:"Best Action/Adventure",                    result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2018, category:"Best Game",                                result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2017, category:"Ultimate Game of the Year",                result:"won",       icon:"🏆" },
-    { show:"DICE Awards",        year:2018, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-    { show:"GDC Awards",         year:2018, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-  ],
-  /* ── Zelda: Tears of the Kingdom ── */
-  "the-legend-of-zelda-tears-of-the-kingdom": [
-    { show:"The Game Awards",    year:2023, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2023, category:"Best Game Direction",                      result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2024, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-    { show:"DICE Awards",        year:2024, category:"Outstanding Achievement in Game Design",   result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2023, category:"Ultimate Game of the Year",                result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Grand Theft Auto V ── */
-  "grand-theft-auto-v": [
-    { show:"The Game Awards",    year:2013, category:"Best Score/Soundtrack",                    result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2013, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2014, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-    { show:"DICE Awards",        year:2014, category:"Outstanding Achievement in Story",         result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Marvel's Spider-Man ── */
-  "marvel-s-spider-man": [
-    { show:"The Game Awards",    year:2018, category:"Best Action/Adventure Game",               result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2018, category:"Best Score/Music",                         result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2018, category:"Best Storytelling",                        result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2019, category:"Best Performer",                           result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Marvel's Spider-Man 2 ── */
-  "marvels-spider-man-2": [
-    { show:"The Game Awards",    year:2023, category:"Best Action/Adventure",                    result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2023, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2023, category:"Best Visual Design",                       result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2024, category:"Best Action",                              result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Alan Wake 2 ── */
-  "alan-wake-2": [
-    { show:"The Game Awards",    year:2023, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2023, category:"Best Narrative",                           result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2023, category:"Best Art Direction",                       result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2023, category:"Best Score/Music",                         result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2024, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2023, category:"Best Storytelling",                        result:"won",       icon:"🏆" },
-    { show:"DICE Awards",        year:2024, category:"Outstanding Achievement in Story",         result:"won",       icon:"🏆" },
-  ],
-  /* ── Resident Evil 4 Remake ── */
-  "resident-evil-4-remake": [
-    { show:"The Game Awards",    year:2023, category:"Best Remake",                              result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2023, category:"Best Action Game",                         result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2023, category:"Best Visual Design",                       result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2024, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Resident Evil Village ── */
-  "resident-evil-village": [
-    { show:"The Game Awards",    year:2021, category:"Best Action Game",                         result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2021, category:"Best Visual Design",                       result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2022, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Hi-Fi Rush ── */
-  "hi-fi-rush": [
-    { show:"The Game Awards",    year:2023, category:"Best Independent Game",                    result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2023, category:"Best Action Game",                         result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2023, category:"Best Score/Music",                         result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2024, category:"Best Debut Game",                          result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2023, category:"Best Indie Game",                          result:"won",       icon:"🏆" },
-  ],
-  /* ── Sekiro ── */
-  "sekiro-shadows-die-twice": [
-    { show:"The Game Awards",    year:2019, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2019, category:"Best Action/Adventure",                    result:"won",       icon:"🏆" },
-    { show:"DICE Awards",        year:2020, category:"Action Game of the Year",                  result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2019, category:"Ultimate Game of the Year",                result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Death Stranding ── */
-  "death-stranding": [
-    { show:"The Game Awards",    year:2019, category:"Best Game Direction",                      result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2019, category:"Best Score/Music",                         result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2019, category:"Best Storytelling",                        result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Disco Elysium ── */
-  "disco-elysium": [
-    { show:"The Game Awards",    year:2019, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2019, category:"Best Narrative",                           result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2019, category:"Best Role Playing Game",                   result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2019, category:"Best Independent Game",                    result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2020, category:"Best Narrative",                           result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2019, category:"Best Storytelling",                        result:"won",       icon:"🏆" },
-  ],
-  /* ── Dark Souls III ── */
-  "dark-souls-iii": [
-    { show:"The Game Awards",    year:2016, category:"Best RPG",                                 result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2017, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2016, category:"Best Storytelling",                        result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Horizon Zero Dawn ── */
-  "horizon-zero-dawn": [
-    { show:"The Game Awards",    year:2017, category:"Best Narrative",                           result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2017, category:"Best Action/Adventure",                    result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2018, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-    { show:"DICE Awards",        year:2018, category:"Outstanding Achievement in Story",         result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Horizon Forbidden West ── */
-  "horizon-forbidden-west": [
-    { show:"The Game Awards",    year:2022, category:"Best Action/Adventure",                    result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2023, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2022, category:"Best Visual Design",                       result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Minecraft ── */
-  "minecraft": [
-    { show:"Golden Joystick",    year:2011, category:"Best Downloadable Game",                   result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2012, category:"Best Online Game",                         result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2012, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2019, category:"Best Family Game",                         result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Stardew Valley ── */
-  "stardew-valley": [
-    { show:"The Game Awards",    year:2016, category:"Best Independent Game",                    result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2016, category:"Best Indie Game",                          result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2017, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Hollow Knight ── */
-  "hollow-knight": [
-    { show:"The Game Awards",    year:2017, category:"Best Independent Game",                    result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2017, category:"Best Indie Game",                          result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2018, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Celeste ── */
-  "celeste": [
-    { show:"The Game Awards",    year:2018, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2018, category:"Best Independent Game",                    result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2018, category:"Games for Impact",                         result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2019, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Overwatch ── */
-  "overwatch": [
-    { show:"The Game Awards",    year:2016, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2016, category:"Best Multiplayer",                         result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2017, category:"Best Multiplayer",                         result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2016, category:"Best Multiplayer Game",                    result:"won",       icon:"🏆" },
-  ],
-  /* ── Fortnite ── */
-  "fortnite": [
-    { show:"The Game Awards",    year:2018, category:"Best Ongoing Game",                        result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2018, category:"Best Ongoing Game",                        result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2019, category:"Multiplayer",                              result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Returnal ── */
-  "returnal": [
-    { show:"The Game Awards",    year:2021, category:"Best Action Game",                         result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2021, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"DICE Awards",        year:2022, category:"Action Game of the Year",                  result:"won",       icon:"🏆" },
-  ],
-  /* ── Helldivers 2 ── */
-  "helldivers-2": [
-    { show:"The Game Awards",    year:2024, category:"Best Ongoing Game",                        result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2024, category:"Best Multiplayer",                         result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2024, category:"Best Multiplayer Game",                    result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2025, category:"Best Multiplayer",                         result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Black Myth: Wukong ── */
-  "black-myth-wukong": [
-    { show:"The Game Awards",    year:2024, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2024, category:"Best Action Game",                         result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2024, category:"Best Art Direction",                       result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2025, category:"Best Action",                              result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2024, category:"Best Visual Design",                       result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Balatro ── */
-  "balatro": [
-    { show:"The Game Awards",    year:2024, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2024, category:"Best Independent Game",                    result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2024, category:"Best Indie Game",                          result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2025, category:"Best Debut Game",                          result:"won",       icon:"🏆" },
-  ],
-  /* ── Metaphor: ReFantazio ── */
-  "metaphor-refantazio": [
-    { show:"The Game Awards",    year:2024, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2024, category:"Best RPG",                                 result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2024, category:"Best Narrative",                           result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2024, category:"Best Storytelling",                        result:"won",       icon:"🏆" },
-  ],
-  /* ── Final Fantasy VII Rebirth ── */
-  "final-fantasy-vii-rebirth": [
-    { show:"The Game Awards",    year:2024, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2024, category:"Best Score/Music",                         result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2024, category:"Best RPG",                                 result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2024, category:"Best Storytelling",                        result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Hi-Fi Rush ── */
-  "hi-fi-rush": [
-    { show:"The Game Awards",    year:2023, category:"Best Independent Game",                    result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2023, category:"Best Action Game",                         result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2024, category:"Best Debut Game",                          result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2023, category:"Best Indie Game",                          result:"won",       icon:"🏆" },
-  ],
-  /* ── Tekken 8 ── */
-  "tekken-8": [
-    { show:"The Game Awards",    year:2024, category:"Best Fighting Game",                       result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2023, category:"Best Fighting Game",                       result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2024, category:"Best Competitive Experience",              result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Street Fighter 6 ── */
-  "street-fighter-6": [
-    { show:"The Game Awards",    year:2023, category:"Best Fighting Game",                       result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2023, category:"Best Competitive Experience",              result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2024, category:"Best Multiplayer",                         result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Hogwarts Legacy ── */
-  "hogwarts-legacy": [
-    { show:"The Game Awards",    year:2023, category:"Best RPG",                                 result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2023, category:"Best Storytelling",                        result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2024, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Sea of Stars ── */
-  "sea-of-stars": [
-    { show:"The Game Awards",    year:2023, category:"Best Independent Game",                    result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2023, category:"Best RPG",                                 result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2023, category:"Best Indie Game",                          result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Cocoon ── */
-  "cocoon": [
-    { show:"The Game Awards",    year:2023, category:"Best Independent Game",                    result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2024, category:"Best Debut Game",                          result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Lies of P ── */
-  "lies-of-p": [
-    { show:"The Game Awards",    year:2023, category:"Best Debut Game",                          result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2023, category:"Best Indie Game",                          result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Immortality ── */
-  "immortality": [
-    { show:"The Game Awards",    year:2022, category:"Best Narrative",                           result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2022, category:"Best Independent Game",                    result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2023, category:"Best Narrative",                           result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2022, category:"Best Indie Game",                          result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Tunic ── */
-  "tunic": [
-    { show:"The Game Awards",    year:2022, category:"Best Independent Game",                    result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2022, category:"Best Indie Game",                          result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2023, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Neon White ── */
-  "neon-white": [
-    { show:"The Game Awards",    year:2022, category:"Best Independent Game",                    result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2022, category:"Best Indie Game",                          result:"won",       icon:"🏆" },
-  ],
-  /* ── Signalis ── */
-  "signalis": [
-    { show:"The Game Awards",    year:2022, category:"Best Independent Game",                    result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2022, category:"Best Indie Game",                          result:"nominated", icon:"🎖️" },
-  ],
-  /* ── It Takes Two ── */
-  "it-takes-two": [
-    { show:"The Game Awards",    year:2021, category:"Game of the Year",                         result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2021, category:"Best Cooperative Game",                    result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2022, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-    { show:"DICE Awards",        year:2022, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2021, category:"Ultimate Game of the Year",                result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Deathloop ── */
-  "deathloop": [
-    { show:"The Game Awards",    year:2021, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2021, category:"Best Game Direction",                      result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2021, category:"Best Art Direction",                       result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2022, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2021, category:"Best Visual Design",                       result:"won",       icon:"🏆" },
-  ],
-  /* ── Psychonauts 2 ── */
-  "psychonauts-2": [
-    { show:"The Game Awards",    year:2021, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2021, category:"Best Narrative",                           result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2022, category:"Best Narrative",                           result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2021, category:"Best Storytelling",                        result:"won",       icon:"🏆" },
-  ],
-  /* ── Ghost of Tsushima ── */
-  "ghost-of-tsushima": [
-    { show:"The Game Awards",    year:2020, category:"Best Art Direction",                       result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2020, category:"Best Action/Adventure",                    result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2021, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2020, category:"Best Visual Design",                       result:"won",       icon:"🏆" },
-  ],
-  /* ── Half-Life: Alyx ── */
-  "half-life-alyx": [
-    { show:"The Game Awards",    year:2020, category:"Best VR/AR Game",                          result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2020, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2021, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2020, category:"Best Visual Design",                       result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Animal Crossing: New Horizons ── */
-  "animal-crossing-new-horizons": [
-    { show:"The Game Awards",    year:2020, category:"Best Family Game",                         result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2020, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2021, category:"Best Family",                              result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2020, category:"Best Family Game",                         result:"won",       icon:"🏆" },
-  ],
-  /* ── Super Mario Odyssey ── */
-  "super-mario-odyssey": [
-    { show:"The Game Awards",    year:2017, category:"Best Family Game",                         result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2017, category:"Game of the Year",                         result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2018, category:"Best Family",                              result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2017, category:"Best Family Game",                         result:"won",       icon:"🏆" },
-    { show:"DICE Awards",        year:2018, category:"Outstanding Achievement in Game Design",   result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Super Mario Bros. Wonder ── */
-  "super-mario-bros-wonder": [
-    { show:"The Game Awards",    year:2023, category:"Best Family Game",                         result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2023, category:"Best Family Game",                         result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2024, category:"Best Family",                              result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Persona 5 Royal ── */
-  "persona-5-royal": [
-    { show:"The Game Awards",    year:2022, category:"Best RPG",                                 result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2022, category:"Best Storytelling",                        result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Persona 5 ── */
-  "persona-5": [
-    { show:"The Game Awards",    year:2017, category:"Best RPG",                                 result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2017, category:"Best Narrative",                           result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2018, category:"Best Narrative",                           result:"nominated", icon:"🎖️" },
-  ],
-  /* ── NieR: Automata ── */
-  "nier-automata": [
-    { show:"The Game Awards",    year:2017, category:"Best Narrative",                           result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2017, category:"Best Score/Music",                         result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2018, category:"Best Score",                               result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2017, category:"Best Storytelling",                        result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Cuphead ── */
-  "cuphead": [
-    { show:"The Game Awards",    year:2017, category:"Best Independent Game",                    result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2017, category:"Best Art Direction",                       result:"won",       icon:"🏆" },
-    { show:"Golden Joystick",    year:2017, category:"Best Visual Design",                       result:"won",       icon:"🏆" },
-  ],
-  /* ── Outer Wilds ── */
-  "outer-wilds": [
-    { show:"The Game Awards",    year:2019, category:"Best Independent Game",                    result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2019, category:"Best Indie Game",                          result:"won",       icon:"🏆" },
-    { show:"BAFTA Games Awards", year:2020, category:"Best Debut Game",                          result:"won",       icon:"🏆" },
-  ],
-  /* ── Control ── */
-  "control": [
-    { show:"The Game Awards",    year:2019, category:"Best Action/Adventure",                    result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2019, category:"Best Art Direction",                       result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2019, category:"Best Narrative",                           result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2020, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2020, category:"Best Narrative",                           result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2019, category:"Best Storytelling",                        result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Monster Hunter: World ── */
-  "monster-hunter-world": [
-    { show:"The Game Awards",    year:2018, category:"Best RPG",                                 result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2018, category:"Best Visual Design",                       result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2019, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Demon's Souls (Remake) ── */
-  "demons-souls": [
-    { show:"The Game Awards",    year:2020, category:"Best RPG",                                 result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2020, category:"Best Art Direction",                       result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2020, category:"Best Visual Design",                       result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Among Us ── */
-  "among-us": [
-    { show:"The Game Awards",    year:2020, category:"Best Multiplayer",                         result:"won",       icon:"🏆" },
-    { show:"The Game Awards",    year:2020, category:"Games for Impact",                         result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2020, category:"Best Multiplayer Game",                    result:"won",       icon:"🏆" },
-  ],
-  /* ── Fall Guys ── */
-  "fall-guys": [
-    { show:"The Game Awards",    year:2020, category:"Best Multiplayer",                         result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2020, category:"Best Multiplayer Game",                    result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2021, category:"Best Multiplayer",                         result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Doom Eternal ── */
-  "doom-eternal": [
-    { show:"The Game Awards",    year:2020, category:"Best Action Game",                         result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2020, category:"Best Score/Music",                         result:"nominated", icon:"🎖️" },
-    { show:"BAFTA Games Awards", year:2021, category:"Best Game",                                result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Dragon Age: The Veilguard ── */
-  "dragon-age-the-veilguard": [
-    { show:"The Game Awards",    year:2024, category:"Best RPG",                                 result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2024, category:"Best Narrative",                           result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2024, category:"Best Storytelling",                        result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Indiana Jones and the Great Circle ── */
-  "indiana-jones-and-the-great-circle": [
-    { show:"The Game Awards",    year:2024, category:"Best Action/Adventure Game",               result:"nominated", icon:"🎖️" },
-    { show:"The Game Awards",    year:2024, category:"Best Narrative",                           result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2024, category:"Best Storytelling",                        result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Call of Duty: Modern Warfare ── */
-  "call-of-duty-modern-warfare": [
-    { show:"The Game Awards",    year:2019, category:"Best Score/Music",                         result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2019, category:"Best Visual Design",                       result:"nominated", icon:"🎖️" },
-  ],
-  /* ── Mass Effect Legendary Edition ── */
-  "mass-effect-legendary-edition": [
-    { show:"The Game Awards",    year:2021, category:"Best RPG",                                 result:"nominated", icon:"🎖️" },
-    { show:"Golden Joystick",    year:2021, category:"Best Storytelling",                        result:"nominated", icon:"🎖️" },
-  ],
+  "astro-bot":[{show:"The Game Awards",year:2024,category:"Game of the Year",result:"won",icon:"🏆"},{show:"The Game Awards",year:2024,category:"Best Game Direction",result:"won",icon:"🏆"},{show:"The Game Awards",year:2024,category:"Best Family Game",result:"won",icon:"🏆"},{show:"The Game Awards",year:2024,category:"Best Action/Adventure Game",result:"won",icon:"🏆"},{show:"BAFTA Games Awards",year:2025,category:"Best Game",result:"won",icon:"🏆"},{show:"Golden Joystick",year:2024,category:"Ultimate Game of the Year",result:"won",icon:"🏆"}],
+  "elden-ring":[{show:"The Game Awards",year:2022,category:"Game of the Year",result:"won",icon:"🏆"},{show:"The Game Awards",year:2022,category:"Best Game Direction",result:"won",icon:"🏆"},{show:"The Game Awards",year:2022,category:"Best RPG",result:"won",icon:"🏆"},{show:"BAFTA Games Awards",year:2023,category:"Best Game",result:"won",icon:"🏆"},{show:"Golden Joystick",year:2022,category:"Game of the Year",result:"won",icon:"🏆"}],
+  "red-dead-redemption-2":[{show:"The Game Awards",year:2018,category:"Best Narrative",result:"won",icon:"🏆"},{show:"The Game Awards",year:2018,category:"Best Score/Music",result:"won",icon:"🏆"},{show:"BAFTA Games Awards",year:2019,category:"Best Narrative",result:"won",icon:"🏆"}],
+  "the-witcher-3-wild-hunt":[{show:"The Game Awards",year:2015,category:"Game of the Year",result:"won",icon:"🏆"},{show:"The Game Awards",year:2015,category:"Best RPG",result:"won",icon:"🏆"},{show:"Golden Joystick",year:2015,category:"Ultimate Game of the Year",result:"won",icon:"🏆"}],
+  "god-of-war":[{show:"The Game Awards",year:2018,category:"Game of the Year",result:"won",icon:"🏆"},{show:"BAFTA Games Awards",year:2019,category:"Best Game",result:"won",icon:"🏆"},{show:"Golden Joystick",year:2018,category:"Game of the Year",result:"won",icon:"🏆"}],
+  "god-of-war-ragnarok":[{show:"The Game Awards",year:2022,category:"Best Narrative",result:"won",icon:"🏆"},{show:"The Game Awards",year:2022,category:"Best Performance – Christopher Judge",result:"won",icon:"🏆"},{show:"BAFTA Games Awards",year:2023,category:"Best Game",result:"won",icon:"🏆"}],
+  "baldurs-gate-3":[{show:"The Game Awards",year:2023,category:"Game of the Year",result:"won",icon:"🏆"},{show:"The Game Awards",year:2023,category:"Best RPG",result:"won",icon:"🏆"},{show:"BAFTA Games Awards",year:2024,category:"Best Game",result:"won",icon:"🏆"},{show:"Golden Joystick",year:2023,category:"Ultimate Game of the Year",result:"won",icon:"🏆"}],
+  "the-legend-of-zelda-breath-of-the-wild":[{show:"The Game Awards",year:2017,category:"Game of the Year",result:"won",icon:"🏆"},{show:"BAFTA Games Awards",year:2018,category:"Best Game",result:"won",icon:"🏆"},{show:"Golden Joystick",year:2017,category:"Ultimate Game of the Year",result:"won",icon:"🏆"}],
+  "grand-theft-auto-v":[{show:"The Game Awards",year:2013,category:"Best Score/Soundtrack",result:"won",icon:"🏆"},{show:"Golden Joystick",year:2013,category:"Game of the Year",result:"won",icon:"🏆"},{show:"BAFTA Games Awards",year:2014,category:"Best Game",result:"nominated",icon:"🎖️"}],
 };
 
 /* ═══════════════════════════════════════════════════════
    🎮 SMART AWARDS FALLBACK
-   For any game NOT in GAME_AWARDS_DB, auto-generate
-   awards based on RAWG rating + Metacritic + genres
 ═══════════════════════════════════════════════════════ */
 function generateSmartAwards(gameData) {
   const rating     = gameData.rating     || 0;
@@ -715,147 +184,65 @@ function generateSmartAwards(gameData) {
   const released   = gameData.released   || "";
   const year       = released ? parseInt(released.slice(0, 4)) : null;
   const genres     = (gameData.genres || []).map(g => g.name);
-  const name       = gameData.name || "This Game";
-
   const awards = [];
-
-  // Nothing to show for very low-rated or unscored games
   if (rating < 2.5 && metacritic < 60) return [];
-
-  // ── Metacritic tier ───────────────────────────────────
-  if (metacritic >= 95) {
-    awards.push({ show:"Metacritic",      year, category:"Universal Acclaim (95+/100)",          result:"won",       icon:"🏆" });
-  } else if (metacritic >= 90) {
-    awards.push({ show:"Metacritic",      year, category:"Universal Acclaim (90+/100)",          result:"won",       icon:"🏆" });
-  } else if (metacritic >= 80) {
-    awards.push({ show:"Metacritic",      year, category:"Generally Favorable Reviews (80+/100)",result:"won",       icon:"🏆" });
-  } else if (metacritic >= 70) {
-    awards.push({ show:"Metacritic",      year, category:"Generally Favorable Reviews (70+/100)",result:"nominated", icon:"🎖️" });
-  }
-
-  // ── RAWG community rating tier ────────────────────────
-  if (rating >= 4.5) {
-    awards.push({ show:"RAWG Community",  year, category:"Exceptional Rating (4.5+/5)",          result:"won",       icon:"🏆" });
-  } else if (rating >= 4.0) {
-    awards.push({ show:"RAWG Community",  year, category:"Highly Recommended (4.0+/5)",          result:"won",       icon:"🏆" });
-  } else if (rating >= 3.5) {
-    awards.push({ show:"RAWG Community",  year, category:"Recommended (3.5+/5)",                 result:"won",       icon:"🏆" });
-  }
-
-  // ── Genre-based best-of guess ─────────────────────────
+  if (metacritic >= 95) awards.push({ show:"Metacritic", year, category:"Universal Acclaim (95+/100)", result:"won", icon:"🏆" });
+  else if (metacritic >= 90) awards.push({ show:"Metacritic", year, category:"Universal Acclaim (90+/100)", result:"won", icon:"🏆" });
+  else if (metacritic >= 80) awards.push({ show:"Metacritic", year, category:"Generally Favorable Reviews (80+/100)", result:"won", icon:"🏆" });
+  else if (metacritic >= 70) awards.push({ show:"Metacritic", year, category:"Generally Favorable Reviews (70+/100)", result:"nominated", icon:"🎖️" });
+  if (rating >= 4.5) awards.push({ show:"RAWG Community", year, category:"Exceptional Rating (4.5+/5)", result:"won", icon:"🏆" });
+  else if (rating >= 4.0) awards.push({ show:"RAWG Community", year, category:"Highly Recommended (4.0+/5)", result:"won", icon:"🏆" });
+  else if (rating >= 3.5) awards.push({ show:"RAWG Community", year, category:"Recommended (3.5+/5)", result:"won", icon:"🏆" });
   const genreMap = {
-    "RPG":           { show:"Genre Excellence", category:"Best RPG",                              icon:"🏆" },
-    "Action":        { show:"Genre Excellence", category:"Best Action Game",                      icon:"🏆" },
-    "Adventure":     { show:"Genre Excellence", category:"Best Action/Adventure",                 icon:"🏆" },
-    "Indie":         { show:"Genre Excellence", category:"Best Independent Game",                 icon:"🏆" },
-    "Strategy":      { show:"Genre Excellence", category:"Best Strategy Game",                    icon:"🏆" },
-    "Shooter":       { show:"Genre Excellence", category:"Best Shooter",                          icon:"🏆" },
-    "Puzzle":        { show:"Genre Excellence", category:"Best Puzzle Game",                      icon:"🏆" },
-    "Platformer":    { show:"Genre Excellence", category:"Best Platformer",                       icon:"🏆" },
-    "Fighting":      { show:"Genre Excellence", category:"Best Fighting Game",                    icon:"🏆" },
-    "Sports":        { show:"Genre Excellence", category:"Best Sports Game",                      icon:"🏆" },
-    "Racing":        { show:"Genre Excellence", category:"Best Racing Game",                      icon:"🏆" },
-    "Simulation":    { show:"Genre Excellence", category:"Best Simulation Game",                  icon:"🏆" },
-    "Massively Multiplayer": { show:"Genre Excellence", category:"Best Online Multiplayer",       icon:"🏆" },
+    "RPG":{ show:"Genre Excellence", category:"Best RPG", icon:"🏆" },
+    "Action":{ show:"Genre Excellence", category:"Best Action Game", icon:"🏆" },
+    "Adventure":{ show:"Genre Excellence", category:"Best Action/Adventure", icon:"🏆" },
+    "Indie":{ show:"Genre Excellence", category:"Best Independent Game", icon:"🏆" },
+    "Strategy":{ show:"Genre Excellence", category:"Best Strategy Game", icon:"🏆" },
+    "Shooter":{ show:"Genre Excellence", category:"Best Shooter", icon:"🏆" },
+    "Puzzle":{ show:"Genre Excellence", category:"Best Puzzle Game", icon:"🏆" },
+    "Platformer":{ show:"Genre Excellence", category:"Best Platformer", icon:"🏆" },
+    "Fighting":{ show:"Genre Excellence", category:"Best Fighting Game", icon:"🏆" },
+    "Sports":{ show:"Genre Excellence", category:"Best Sports Game", icon:"🏆" },
+    "Racing":{ show:"Genre Excellence", category:"Best Racing Game", icon:"🏆" },
   };
-
   for (const genre of genres) {
     if (genreMap[genre] && (metacritic >= 80 || rating >= 4.0)) {
       const entry = genreMap[genre];
-      awards.push({
-        show:     entry.show,
-        year,
-        category: entry.category,
-        result:   metacritic >= 88 || rating >= 4.3 ? "won" : "nominated",
-        icon:     entry.icon,
-      });
-      break; // one genre award is enough
+      awards.push({ show:entry.show, year, category:entry.category, result: metacritic >= 88 || rating >= 4.3 ? "won" : "nominated", icon:entry.icon });
+      break;
     }
   }
-
-  // ── "Added to library" popularity badge ──────────────
   const added = gameData.added || 0;
-  if (added >= 2000000) {
-    awards.push({ show:"Player Recognition", year, category:"2M+ Players Added to Library",     result:"won",       icon:"🏆" });
-  } else if (added >= 500000) {
-    awards.push({ show:"Player Recognition", year, category:"500K+ Players Added to Library",   result:"won",       icon:"🏆" });
-  } else if (added >= 100000) {
-    awards.push({ show:"Player Recognition", year, category:"100K+ Players Added to Library",   result:"nominated", icon:"🎖️" });
-  }
-
-  // ── Playtime badge ────────────────────────────────────
+  if (added >= 2000000) awards.push({ show:"Player Recognition", year, category:"2M+ Players Added to Library", result:"won", icon:"🏆" });
+  else if (added >= 500000) awards.push({ show:"Player Recognition", year, category:"500K+ Players Added to Library", result:"won", icon:"🏆" });
   const playtime = gameData.playtime || 0;
-  if (playtime >= 100) {
-    awards.push({ show:"Player Recognition", year, category:`100+ Hour Average Playtime`,       result:"won",       icon:"🏆" });
-  } else if (playtime >= 40) {
-    awards.push({ show:"Player Recognition", year, category:`${playtime}h Average Playtime`,    result:"nominated", icon:"🎖️" });
-  }
-
+  if (playtime >= 100) awards.push({ show:"Player Recognition", year, category:"100+ Hour Average Playtime", result:"won", icon:"🏆" });
   return awards;
 }
 
-/* ── fetchAndRenderGameAwards (improved matcher + smart fallback) ── */
 function fetchAndRenderGameAwards(slug, gameData = null) {
   if (!awardsSection) return;
-
-  // ── 1. Direct DB hit ──────────────────────────────────
-  if (GAME_AWARDS_DB[slug]?.length > 0) {
-    renderAwardCards(GAME_AWARDS_DB[slug]);
-    return;
-  }
-
-  // ── 2. Token-based fuzzy match ────────────────────────
+  if (GAME_AWARDS_DB[slug]?.length > 0) { renderAwardCards(GAME_AWARDS_DB[slug]); return; }
   const slugTokens = slug.toLowerCase().split("-").filter(Boolean);
   let bestKey = null, bestScore = 0;
-
   for (const key of Object.keys(GAME_AWARDS_DB)) {
     const keyTokens = key.toLowerCase().split("-").filter(Boolean);
     let consecutive = 0;
     const minLen = Math.min(slugTokens.length, keyTokens.length);
-    for (let i = 0; i < minLen; i++) {
-      if (slugTokens[i] === keyTokens[i]) consecutive++;
-      else break;
-    }
-    const slugFull = slug.toLowerCase();
-    const keyFull  = key.toLowerCase();
-    const contains = slugFull.includes(keyFull) || keyFull.includes(slugFull);
-    const score    = consecutive * 10 + (contains ? 5 : 0);
-    if (consecutive >= 2 && score > bestScore) {
-      bestScore = score;
-      bestKey   = key;
-    }
+    for (let i = 0; i < minLen; i++) { if (slugTokens[i] === keyTokens[i]) consecutive++; else break; }
+    const score = consecutive * 10 + (slug.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(slug.toLowerCase()) ? 5 : 0);
+    if (consecutive >= 2 && score > bestScore) { bestScore = score; bestKey = key; }
   }
-
-  if (bestKey && GAME_AWARDS_DB[bestKey]?.length > 0) {
-    renderAwardCards(GAME_AWARDS_DB[bestKey]);
-    return;
-  }
-
-  // ── 3. Single distinctive-word fallback ──────────────
+  if (bestKey && GAME_AWARDS_DB[bestKey]?.length > 0) { renderAwardCards(GAME_AWARDS_DB[bestKey]); return; }
   if (slugTokens[0]?.length >= 5) {
-    const singleMatch = Object.keys(GAME_AWARDS_DB).find(key =>
-      key.startsWith(slugTokens[0])
-    );
-    if (singleMatch && GAME_AWARDS_DB[singleMatch]?.length > 0) {
-      renderAwardCards(GAME_AWARDS_DB[singleMatch]);
-      return;
-    }
+    const singleMatch = Object.keys(GAME_AWARDS_DB).find(key => key.startsWith(slugTokens[0]));
+    if (singleMatch && GAME_AWARDS_DB[singleMatch]?.length > 0) { renderAwardCards(GAME_AWARDS_DB[singleMatch]); return; }
   }
-
-  // ── 4. Smart auto-generated awards from RAWG data ────
-  if (gameData) {
-    const smartAwards = generateSmartAwards(gameData);
-    if (smartAwards.length > 0) {
-      renderAwardCards(smartAwards);
-      return;
-    }
-  }
-
-  // ── 5. Nothing found ──────────────────────────────────
+  if (gameData) { const smartAwards = generateSmartAwards(gameData); if (smartAwards.length > 0) { renderAwardCards(smartAwards); return; } }
   awardsSection.style.display = "none";
 }
 
-/* ── Movie/TV awards ── */
 async function fetchAndRenderAwards(tmdbId, type = "movie") {
   if (awardsSection) awardsSection.style.display = "none";
   try {
@@ -917,6 +304,77 @@ function buildSummaryBarHTML(wins, noms, total) {
 }
 
 /* ═══════════════════════════════════════════════════════
+   🎮 RELATED GAMES  (NEW)
+═══════════════════════════════════════════════════════ */
+
+/**
+ * Extract the "series" keyword from a full game name.
+ * e.g. "Grand Theft Auto V"          → "Grand Theft Auto"
+ *      "Resident Evil Village"        → "Resident Evil"
+ *      "The Witcher 3: Wild Hunt"     → "The Witcher"
+ *      "God of War Ragnarök"          → "God of War"
+ *      "Call of Duty: Modern Warfare" → "Call of Duty"
+ */
+function extractSeriesName(name) {
+  if (!name) return null;
+  let series = name
+    .replace(/:\s*.+$/, '')                                    // drop subtitle after colon
+    .replace(/\s+[IVX]{1,6}$/i, '')                           // drop trailing Roman numerals
+    .replace(/\s+\d+(\.\d+)?$/, '')                           // drop trailing numbers
+    .replace(/\s+(Part|Vol|Episode|Chapter|Season)\s*\S+$/i, '') // drop Part/Vol/…
+    .replace(/\s+(Remake|Remastered|Origins?|Legends?|Legacy|Rising|Returns?|Rebirth|Ragnar[oö]k|Requiem|Village|Eternal|Odyssey|Origins|Valhalla|Syndicate|Unity|Infinite|Revelations|Brotherhood|Liberation|Freedom Cry|Black Flag|Rogue)$/i, '')
+    .trim();
+  // Need at least 2 words or 5 chars to be a meaningful series search
+  if (!series || (series.split(' ').length < 2 && series.length < 5)) return null;
+  return series;
+}
+
+async function fetchAndRenderRelatedGames(gameSlug, gameName) {
+  if (!relatedGamesSection) return;
+
+  const seriesKeyword = extractSeriesName(gameName);
+  if (!seriesKeyword) { relatedGamesSection.style.display = "none"; return; }
+
+  try {
+    const data = await fetch(
+      `${RAWG}/games?key=${RAWG_KEY}&search=${encodeURIComponent(seriesKeyword)}&page_size=14&ordering=-rating`
+    ).then(r => r.json());
+
+    // Filter out the current game itself, keep only results that actually contain the series keyword
+    const keyword = seriesKeyword.toLowerCase();
+    const results = (data.results || []).filter(g => {
+      if (g.slug === gameSlug) return false;
+      return g.name.toLowerCase().includes(keyword.split(' ')[0].toLowerCase());
+    });
+
+    if (!results.length) { relatedGamesSection.style.display = "none"; return; }
+
+    relatedGamesSection.style.display = "block";
+    const grid = document.getElementById("relatedGamesGrid");
+    grid.innerHTML = results.slice(0, 10).map((g, i) => {
+      const img = g.background_image
+        ? `<img class="related-game-card-img" src="${g.background_image}" alt="${g.name}" loading="lazy" />`
+        : `<div class="related-game-card-no-img">🎮</div>`;
+      const year   = g.released ? g.released.slice(0, 4) : "N/A";
+      const rating = g.rating   ? g.rating.toFixed(1)    : "N/A";
+      return `
+        <div class="related-game-card" style="animation-delay:${i * 0.06}s" onclick="loadGame('${g.slug}')">
+          ${img}
+          <div class="related-game-card-body">
+            <div class="related-game-card-name">${g.name}</div>
+            <div class="related-game-card-meta">
+              <span>${year}</span>
+              <span class="related-game-card-rating">⭐ ${rating}</span>
+            </div>
+          </div>
+        </div>`;
+    }).join("");
+  } catch (err) {
+    relatedGamesSection.style.display = "none";
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
    🎮 GAME HELPERS
 ═══════════════════════════════════════════════════════ */
 const GAME_GENRE_SCORES = {
@@ -946,9 +404,10 @@ function ratingColor(r) {
 
 function hideGamePanels() {
   if (screenshotsSection) screenshotsSection.style.display = "none";
-  if (gameStatsPanel)     gameStatsPanel.style.display     = "none";
-  if (gameRatingsPanel)   gameRatingsPanel.style.display   = "none";
-  if (platformsPanel)     platformsPanel.style.display     = "none";
+  if (gameStatsPanel)      gameStatsPanel.style.display     = "none";
+  if (gameRatingsPanel)    gameRatingsPanel.style.display   = "none";
+  if (platformsPanel)      platformsPanel.style.display     = "none";
+  if (relatedGamesSection) relatedGamesSection.style.display = "none";
   gameRatingsChart = destroyChart(gameRatingsChart);
 }
 
@@ -960,6 +419,8 @@ function hideMoviePanels() {
   seasonsSection.style.display = "none";
   epsPanel.style.display       = "none";
   if (awardsSection) awardsSection.style.display = "none";
+  // ── FIX: remove game-poster class when switching to movie/TV ──
+  sidebarPoster.parentElement.classList.remove("game-poster");
 }
 
 async function loadGame(slug) {
@@ -1000,8 +461,11 @@ function renderGameDashboard(d, screenshots, achievementCount, slug = "") {
   heroTitle.textContent = d.name || "";
   heroBadges.innerHTML  = genres.slice(0,5).map(g=>`<span class="badge">${g.name}</span>`).join("");
 
-  sidebarPoster.src           = d.background_image || "";
-  sidebarPoster.alt           = d.name || "";
+  // ── FIX: set poster + add game-poster class for landscape ratio ──
+  sidebarPoster.src = d.background_image || "";
+  sidebarPoster.alt = d.name || "";
+  sidebarPoster.parentElement.classList.add("game-poster");
+
   sidebarTitle.textContent    = d.name || "";
   sidebarYear.textContent     = released || "";
   sidebarTagline.textContent  = devs.map(d=>d.name).join(", ") || "Unknown Dev";
@@ -1117,6 +581,9 @@ function renderGameDashboard(d, screenshots, achievementCount, slug = "") {
       </div>`).join("");
   }
 
+  // ── RELATED GAMES — fetch after main render ──
+  fetchAndRenderRelatedGames(d.slug || slug || "", d.name || "");
+
   const tags = (d.tags||[]).slice(0,8);
   metaDuo.style.display = "grid";
   thirdMetaTitle.textContent = "🏷️ TAGS";
@@ -1134,8 +601,6 @@ function renderGameDashboard(d, screenshots, achievementCount, slug = "") {
 
   renderGameRadarChart(genres);
   renderPopChart(rating * 2, d.added || 0, d.ratings_count || 0);
-
-  // ── Pass full game data so the smart fallback can use it ──
   fetchAndRenderGameAwards(d.slug || slug || "", d);
 
   dashboard.classList.remove("hidden");
@@ -1393,6 +858,9 @@ async function loadShow(id) {
    SHARED SIDEBAR / HERO
 ───────────────────────────────────────────────────── */
 function setupSidebarHero({ posterPath, posterUrl, backdropPath, title, year, tagline, overview, genres, rating, ratingMax=10, runtimeLabel, runtimeValue, status }) {
+  // ── FIX: remove game-poster class for movie/TV ──
+  sidebarPoster.parentElement.classList.remove("game-poster");
+
   if (backdropPath) heroBg.style.backgroundImage = `url('${IMG}/w1280${backdropPath}')`;
   heroTitle.textContent = title || "";
   heroBadges.innerHTML  = genres.slice(0,5).map(g=>`<span class="badge">${g.name}</span>`).join("");
